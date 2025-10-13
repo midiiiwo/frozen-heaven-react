@@ -1,0 +1,65 @@
+interface Product {
+  id?: string;
+  name: string;
+  category: string;
+  price: number;
+  description: string;
+  imageName: string;
+  stock: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface Category {
+  id?: string;
+  name: string;
+  description: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface CartItem extends Product {
+  quantity: number;
+}
+
+interface Customer {
+  id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface Order {
+  id?: string;
+  customerId?: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerAddress: string;
+  items: CartItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  paymentMethod: "cash" | "card" | "mobile_money";
+  status: "pending" | "processing" | "completed" | "cancelled";
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface OrderStatus {
+  pending: number;
+  processing: number;
+  completed: number;
+  cancelled: number;
+}
+
+interface Analytics {
+  totalRevenue: number;
+  totalOrders: number;
+  totalCustomers: number;
+  averageOrderValue: number;
+  ordersByStatus: OrderStatus;
+}

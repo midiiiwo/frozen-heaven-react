@@ -1,8 +1,11 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useState } from "react";
 import type { Route } from "./+types/cart";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { useCartStore } from "../stores/cartStore";
+import { useCreateOrder } from "../hooks/useOrderMutations";
+import type { Order } from "../types";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -12,21 +15,76 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Cart() {
+  const navigate = useNavigate();
   const items = useCartStore((state) => state.items);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
 
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "card" | "mobile_money"
+  >("cash");
+
+  const createOrderMutation = useCreateOrder();
+
+  const handleCheckout = async () => {
+    if (
+      !customerInfo.name ||
+      !customerInfo.email ||
+      !customerInfo.phone ||
+      !customerInfo.address
+    ) {
+      alert("Please fill in all customer information");
+      return;
+    }
+
+    const subtotal = getTotalPrice();
+    const deliveryFee = 20;
+    const total = subtotal + deliveryFee;
+
+    const orderData: Omit<Order, "id"> = {
+      customerName: customerInfo.name,
+      customerEmail: customerInfo.email,
+      customerPhone: customerInfo.phone,
+      customerAddress: customerInfo.address,
+      items: items.map((item) => ({
+        ...item,
+        id: String(item.id),
+      })),
+      subtotal,
+      deliveryFee,
+      total,
+      paymentMethod,
+      status: "pending",
+    };
+
+    const result = await createOrderMutation.mutateAsync(orderData);
+
+    if (result) {
+      alert("Order placed successfully! Order ID: " + result.id);
+      clearCart();
+      setShowCheckout(false);
+      navigate("/shop");
+    } else {
+      alert("Failed to place order. Please try again.");
+    }
+  };
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-
         <div className="flex-1 bg-gray-50 flex items-center justify-center py-16">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-white rounded-lg shadow-lg p-12 text-center">
-              {/* Empty Cart Icon */}
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg
                   className="w-12 h-12 text-gray-400"
@@ -42,15 +100,12 @@ export default function Cart() {
                   />
                 </svg>
               </div>
-
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Your cart is empty
               </h2>
-
               <p className="text-gray-600 text-lg mb-8">
                 Start adding some delicious frozen foods to your cart
               </p>
-
               <Link
                 to="/shop"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors font-medium"
@@ -73,7 +128,6 @@ export default function Cart() {
             </div>
           </div>
         </div>
-
         <Footer />
       </div>
     );
@@ -82,7 +136,6 @@ export default function Cart() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-
       <div className="flex-1 bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex items-center justify-between">
@@ -104,7 +157,6 @@ export default function Cart() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
                 <div
@@ -210,49 +262,190 @@ export default function Cart() {
               ))}
             </div>
 
-            {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Order Summary
-                </h2>
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold text-gray-900">
-                      GHC {getTotalPrice()}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Delivery Fee</span>
-                    <span className="font-semibold text-gray-900">GHC 20</span>
-                  </div>
-                  <div className="border-t border-gray-200 pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900">
-                        Total
-                      </span>
-                      <span className="text-2xl font-bold text-[#1b4b27]">
-                        GHC {getTotalPrice() + 20}
-                      </span>
+                {!showCheckout ? (
+                  <>
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">
+                      Order Summary
+                    </h2>
+                    <div className="space-y-4 mb-6">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Subtotal</span>
+                        <span className="font-semibold text-gray-900">
+                          GHC {getTotalPrice()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Delivery Fee</span>
+                        <span className="font-semibold text-gray-900">
+                          GHC 20
+                        </span>
+                      </div>
+                      <div className="border-t border-gray-200 pt-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-gray-900">
+                            Total
+                          </span>
+                          <span className="text-2xl font-bold text-[#1b4b27]">
+                            GHC {getTotalPrice() + 20}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <button className="w-full px-6 py-3 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors font-medium">
-                  Proceed to Checkout
-                </button>
-                <Link
-                  to="/shop"
-                  className="block w-full px-6 py-3 mt-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors font-medium text-center"
-                >
-                  Continue Shopping
-                </Link>
+                    <button
+                      onClick={() => setShowCheckout(true)}
+                      className="w-full px-6 py-3 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors font-medium"
+                    >
+                      Proceed to Checkout
+                    </button>
+                    <Link
+                      to="/shop"
+                      className="block w-full px-6 py-3 mt-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors font-medium text-center"
+                    >
+                      Continue Shopping
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">
+                      Checkout Details
+                    </h2>
+
+                    <div className="space-y-4 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={customerInfo.name}
+                          onChange={(e) =>
+                            setCustomerInfo({
+                              ...customerInfo,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                          placeholder="John Doe"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={customerInfo.email}
+                          onChange={(e) =>
+                            setCustomerInfo({
+                              ...customerInfo,
+                              email: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                          placeholder="john@example.com"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone
+                        </label>
+                        <input
+                          type="tel"
+                          value={customerInfo.phone}
+                          onChange={(e) =>
+                            setCustomerInfo({
+                              ...customerInfo,
+                              phone: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                          placeholder="+233 XX XXX XXXX"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Delivery Address
+                        </label>
+                        <textarea
+                          value={customerInfo.address}
+                          onChange={(e) =>
+                            setCustomerInfo({
+                              ...customerInfo,
+                              address: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                          rows={3}
+                          placeholder="Your delivery address"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Payment Method
+                        </label>
+                        <select
+                          value={paymentMethod}
+                          onChange={(e) =>
+                            setPaymentMethod(
+                              e.target.value as "cash" | "card" | "mobile_money"
+                            )
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                        >
+                          <option value="cash">Cash on Delivery</option>
+                          <option value="mobile_money">Mobile Money</option>
+                          <option value="card">Card (Coming Soon)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-4 mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-600">Subtotal</span>
+                        <span className="font-semibold">
+                          GHC {getTotalPrice()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-600">Delivery</span>
+                        <span className="font-semibold">GHC 20</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold">Total</span>
+                        <span className="text-xl font-bold text-[#1b4b27]">
+                          GHC {getTotalPrice() + 20}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleCheckout}
+                      disabled={createOrderMutation.isPending}
+                      className="w-full px-6 py-3 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors font-medium disabled:opacity-50"
+                    >
+                      {createOrderMutation.isPending
+                        ? "Placing Order..."
+                        : "Place Order"}
+                    </button>
+                    <button
+                      onClick={() => setShowCheckout(false)}
+                      className="block w-full px-6 py-3 mt-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors font-medium text-center"
+                    >
+                      Back to Summary
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );
