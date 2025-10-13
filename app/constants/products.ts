@@ -1,0 +1,150 @@
+export interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  description: string;
+  image: string;
+  stock: number;
+}
+
+export const products: Product[] = [
+  {
+    id: 1,
+    name: "Full Chicken",
+    category: "Poultry",
+    price: 200,
+    description: "Fresh whole chicken, perfect for roasting or grilling.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 50,
+  },
+  {
+    id: 2,
+    name: "Gizzard",
+    category: "Meat",
+    price: 350,
+    description: "Fresh chicken gizzards, rich in protein and nutrients.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 30,
+  },
+  {
+    id: 3,
+    name: "Salmon",
+    category: "SeaFood",
+    price: 200,
+    description: "Premium quality salmon, rich in omega-3 fatty acids.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 25,
+  },
+  {
+    id: 4,
+    name: "Goat",
+    category: "Meat",
+    price: 150,
+    description: "Tender goat meat, perfect for traditional cooking.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 20,
+  },
+  {
+    id: 5,
+    name: "Chicken Wings",
+    category: "Poultry",
+    price: 180,
+    description: "Crispy chicken wings, perfect for grilling or frying.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 40,
+  },
+  {
+    id: 6,
+    name: "Sausage",
+    category: "Processed Meat",
+    price: 120,
+    description: "Delicious sausages made from quality ingredients.",
+    image: "https://ext.same-assets.com/4027373722/4229952450.png",
+    stock: 60,
+  },
+  {
+    id: 7,
+    name: "Fish Fillet",
+    category: "Fish & Seafood",
+    price: 250,
+    description: "Fresh fish fillets, ready to cook.",
+    image: "https://ext.same-assets.com/4027373722/4229952450.png",
+    stock: 15,
+  },
+  {
+    id: 8,
+    name: "Turkey",
+    category: "Turkey",
+    price: 300,
+    description: "Premium turkey meat for special occasions.",
+    image: "https://ext.same-assets.com/4027373722/4229952450.png",
+    stock: 10,
+  },
+  {
+    id: 9,
+    name: "Prawns",
+    category: "Fish & Seafood",
+    price: 400,
+    description: "Fresh prawns, perfect for seafood dishes.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 12,
+  },
+  {
+    id: 10,
+    name: "Duck",
+    category: "Poultry",
+    price: 280,
+    description: "Tender duck meat for gourmet cooking.",
+    image: "https://ext.same-assets.com/4027373722/4229952450.png",
+    stock: 8,
+  },
+  {
+    id: 11,
+    name: "Lamb",
+    category: "Meat",
+    price: 350,
+    description: "Premium lamb cuts for special dishes.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 15,
+  },
+  {
+    id: 12,
+    name: "Crab",
+    category: "Fish & Seafood",
+    price: 500,
+    description: "Fresh crab for seafood lovers.",
+    image: "https://ext.same-assets.com/4027373722/4229952450.png",
+    stock: 6,
+  },
+  {
+    id: 13,
+    name: "Beef",
+    category: "Offals(Beef)",
+    price: 320,
+    description: "Premium beef cuts for grilling and roasting.",
+    image: "https://ext.same-assets.com/4027373722/4229952450.png",
+    stock: 35,
+  },
+  {
+    id: 14,
+    name: "Goat Meat",
+    category: "Meat",
+    price: 200,
+    description: "Quality goat meat for traditional recipes.",
+    image: "https://ext.same-assets.com/4027373722/399796708.jpeg",
+    stock: 18,
+  },
+];
+
+export const categories = [
+  "All",
+  "Poultry",
+  "Turkey",
+  "Fish & Seafood",
+  "Processed Meat",
+  "Poultry Parts",
+  "Offals(Beef)",
+  "Meat",
+  "SeaFood",
+];
