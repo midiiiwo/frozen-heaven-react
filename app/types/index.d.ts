@@ -1,5 +1,5 @@
 interface Product {
-  id?: string;
+  id: string;
   name: string;
   category: string;
   price: number;
@@ -11,7 +11,7 @@ interface Product {
 }
 
 interface Category {
-  id?: string;
+  id?: string | undefined;
   name: string;
   description: string;
   createdAt?: Date;
@@ -33,7 +33,7 @@ interface Customer {
 }
 
 interface Order {
-  id?: string;
+  id?: string | undefined;
   customerId?: string;
   customerName: string;
   customerEmail: string;

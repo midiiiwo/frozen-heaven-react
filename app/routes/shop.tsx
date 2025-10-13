@@ -85,7 +85,6 @@ export default function Shop() {
               </p>
             </div>
 
-            {/* Price Range Filter */}
             <select
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}

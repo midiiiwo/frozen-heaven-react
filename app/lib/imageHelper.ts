@@ -1,17 +1,22 @@
-// Helper to get product image path with fallback
-export const getProductImage = (imageName: string | undefined): string => {
-  if (!imageName) {
-    return "/images/default-product.png";
+const imageModules = import.meta.glob(
+  "../assets/images/products/*.{png,jpg,jpeg,webp}",
+  {
+    eager: true,
+    import: "default",
   }
+);
 
-  // Try to use the image from assets folder
-  try {
-    return `/assets/products/${imageName}`;
-  } catch (error) {
-    // Fallback to default image if not found
-    return "/images/default-product.png";
+const images: Record<string, string> = {};
+for (const path in imageModules) {
+  const filename = path.split("/").pop()!;
+  images[filename] = imageModules[path] as string;
+}
+
+import defaultImage from "../assets/images/products/default-image.png";
+
+export const getProductImage = (imageName?: string): string => {
+  if (!imageName || !images[imageName]) {
+    return defaultImage;
   }
+  return images[imageName];
 };
-
-// Default product image (placeholder)
-export const DEFAULT_PRODUCT_IMAGE = "/images/default-product.png";

@@ -1,8 +1,14 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { useCartStore } from "../stores/cartStore";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Header() {
   const getTotalItems = useCartStore((state) => state.getTotalItems);
+  const location = useLocation();
+
+  const isHome = location.pathname === "/";
+  const isShop = location.pathname.startsWith("/shop");
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,19 +39,46 @@ export function Header() {
           </Link>
 
           {/* Navigation */}
-          <nav className="flex items-center gap-6">
-            <Link
-              to="/"
-              className="px-4 py-2 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium"
-            >
-              Home
-            </Link>
-            <Link
-              to="/shop"
-              className="px-4 py-2 rounded-md bg-[#1b4b27] text-white hover:bg-[#143820] transition-colors font-medium"
-            >
-              Shop
-            </Link>
+          <nav className="relative flex items-center gap-4 bg-gray-50 p-1 rounded-lg">
+            <div className="relative flex items-center gap-2">
+              {/** Animated Background */}
+              <AnimatePresence>
+                {(isHome || isShop) && (
+                  <motion.div
+                    key={isHome ? "home" : "shop"}
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-[#1b4b27] rounded-md"
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                    }}
+                    style={{
+                      width: "50%",
+                      left: isHome ? 0 : "50%",
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+
+              {/** Links */}
+              <Link
+                to="/"
+                className={`relative z-10 px-4 py-2 rounded-md font-medium transition-colors ${
+                  isHome ? "text-white" : "text-gray-700 hover:text-[#1b4b27]"
+                }`}
+              >
+                Home
+              </Link>
+              <Link
+                to="/shop"
+                className={`relative z-10 px-4 py-2 rounded-md font-medium transition-colors ${
+                  isShop ? "text-white" : "text-gray-700 hover:text-[#1b4b27]"
+                }`}
+              >
+                Shop
+              </Link>
+            </div>
           </nav>
 
           {/* Cart Icon */}

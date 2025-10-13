@@ -6,6 +6,7 @@ import { Footer } from "../components/Footer";
 import { useCartStore } from "../stores/cartStore";
 import { useCreateOrder } from "../hooks/useOrders";
 import { getProductById, updateProductStock } from "../api/products";
+import { getProductImage } from "~/lib/imageHelper";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -199,12 +200,13 @@ export default function Cart() {
                 >
                   <div className="flex gap-6">
                     <img
-                      src={`/assets/products/${item.imageName}`}
+                      src={getProductImage(item.imageName)}
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded-md"
-                      onError={(e) => {
-                        e.currentTarget.src = "/images/default-product.png";
-                      }}
+                      //   onError={(e) => {
+                      //     e.currentTarget.src =
+                      //       "assets/images/products/default-image.png";
+                      //   }}
                     />
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">

@@ -6,7 +6,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { isAuthenticated, adminEmail, logout } = useAuthStore();
+  const { isAuthenticated, logout } = useAuthStore();
 
   // Check authentication on mount and navigation
   useEffect(() => {
