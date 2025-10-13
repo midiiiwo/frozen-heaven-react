@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Route } from "./+types/customers";
+import { useGetCustomers } from "../../hooks/useCustomer";
+import { useGetOrders } from "../../hooks/useOrders";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Customers - Admin - Frozen Haven" }];
@@ -7,72 +9,70 @@ export function meta({}: Route.MetaArgs) {
 
 export default function AdminCustomers() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
-  const customers = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+233 XX XXX XXXX",
-      orders: 12,
-      totalSpent: 3200,
-      lastOrder: "2025-10-12",
-      status: "active",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "+233 XX XXX XXXX",
-      orders: 8,
-      totalSpent: 2100,
-      lastOrder: "2025-10-11",
-      status: "active",
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      phone: "+233 XX XXX XXXX",
-      orders: 15,
-      totalSpent: 4500,
-      lastOrder: "2025-10-10",
-      status: "active",
-    },
-    {
-      id: 4,
-      name: "Sarah Williams",
-      email: "sarah@example.com",
-      phone: "+233 XX XXX XXXX",
-      orders: 5,
-      totalSpent: 1200,
-      lastOrder: "2025-10-08",
-      status: "inactive",
-    },
-    {
-      id: 5,
-      name: "David Brown",
-      email: "david@example.com",
-      phone: "+233 XX XXX XXXX",
-      orders: 20,
-      totalSpent: 6800,
-      lastOrder: "2025-10-12",
-      status: "active",
-    },
-  ];
+  // Fetch data
+  const { data: customers, isLoading: customersLoading } = useGetCustomers();
+  const { data: orders, isLoading: ordersLoading } = useGetOrders();
 
-  const filteredCustomers = customers.filter(
+  const isLoading = customersLoading || ordersLoading;
+
+  // Calculate customer statistics from orders
+  const customerStats = useMemo(() => {
+    if (!orders || !customers) return [];
+
+    return customers.map((customer) => {
+      const customerOrders = orders.filter(
+        (order) => order.customerEmail === customer.email
+      );
+      const completedOrders = customerOrders.filter(
+        (order) => order.status === "completed"
+      );
+
+      const totalSpent = completedOrders.reduce(
+        (sum, order) => sum + order.total,
+        0
+      );
+
+      const lastOrder =
+        customerOrders.length > 0
+          ? customerOrders.sort(
+              (a, b) =>
+                new Date(b.createdAt!).getTime() -
+                new Date(a.createdAt!).getTime()
+            )[0].createdAt
+          : null;
+
+      return {
+        ...customer,
+        orders: customerOrders.length,
+        totalSpent,
+        lastOrder: lastOrder
+          ? new Date(lastOrder).toLocaleDateString()
+          : "Never",
+        status: customerOrders.length > 0 ? "active" : "inactive",
+      };
+    });
+  }, [customers, orders]);
+
+  const filteredCustomers = customerStats.filter(
     (customer) =>
       customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const stats = {
-    total: customers.length,
-    active: customers.filter((c) => c.status === "active").length,
-    inactive: customers.filter((c) => c.status === "inactive").length,
-    revenue: customers.reduce((sum, c) => sum + c.totalSpent, 0),
+    total: customerStats.length,
+    active: customerStats.filter((c) => c.status === "active").length,
+    inactive: customerStats.filter((c) => c.status === "inactive").length,
+    revenue: customerStats.reduce((sum, c) => sum + c.totalSpent, 0),
   };
+
+  // Get customer order history
+  const customerOrderHistory = useMemo(() => {
+    if (!selectedCustomer || !orders) return [];
+    return orders.filter((order) => order.customerEmail === selectedCustomer);
+  }, [selectedCustomer, orders]);
 
   return (
     <div className="p-6 lg:p-8">
@@ -84,9 +84,6 @@ export default function AdminCustomers() {
             Manage customer information and history
           </p>
         </div>
-        <button className="px-6 py-3 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors font-medium">
-          Add New Customer
-        </button>
       </div>
 
       {/* Stats */}
@@ -110,7 +107,9 @@ export default function AdminCustomers() {
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">{stats.total}</h3>
+          <h3 className="text-2xl font-bold text-gray-900">
+            {isLoading ? "..." : stats.total}
+          </h3>
           <p className="text-sm text-gray-500 mt-1">All customers</p>
         </div>
 
@@ -133,8 +132,10 @@ export default function AdminCustomers() {
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">{stats.active}</h3>
-          <p className="text-sm text-gray-500 mt-1">Active this month</p>
+          <h3 className="text-2xl font-bold text-gray-900">
+            {isLoading ? "..." : stats.active}
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">Have placed orders</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -156,8 +157,10 @@ export default function AdminCustomers() {
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">{stats.inactive}</h3>
-          <p className="text-sm text-gray-500 mt-1">Need engagement</p>
+          <h3 className="text-2xl font-bold text-gray-900">
+            {isLoading ? "..." : stats.inactive}
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">No orders yet</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -180,7 +183,7 @@ export default function AdminCustomers() {
             </div>
           </div>
           <h3 className="text-2xl font-bold text-gray-900">
-            GHC {stats.revenue.toLocaleString()}
+            {isLoading ? "..." : `GHC ${stats.revenue.toLocaleString()}`}
           </h3>
           <p className="text-sm text-gray-500 mt-1">From all customers</p>
         </div>
@@ -212,85 +215,102 @@ export default function AdminCustomers() {
         </div>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <p className="text-gray-600">Loading customers...</p>
+        </div>
+      )}
+
       {/* Customers Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                  Customer
-                </th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                  Contact
-                </th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                  Orders
-                </th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                  Total Spent
-                </th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                  Last Order
-                </th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                  Status
-                </th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCustomers.map((customer) => (
-                <tr
-                  key={customer.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#1b4b27] text-white rounded-full flex items-center justify-center font-semibold">
-                        {customer.name.charAt(0)}
+      {!isLoading && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                    Customer
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                    Contact
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                    Orders
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                    Total Spent
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                    Last Order
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCustomers.map((customer) => (
+                  <tr
+                    key={customer.id}
+                    className="border-b border-gray-100 hover:bg-gray-50"
+                  >
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#1b4b27] text-white rounded-full flex items-center justify-center font-semibold">
+                          {customer.name.charAt(0)}
+                        </div>
+                        <span className="font-medium text-gray-900">
+                          {customer.name}
+                        </span>
                       </div>
-                      <span className="font-medium text-gray-900">
-                        {customer.name}
+                    </td>
+                    <td className="py-4 px-6">
+                      <div>
+                        <p className="text-sm text-gray-900">
+                          {customer.email}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {customer.phone}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
+                        {customer.orders}
                       </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div>
-                      <p className="text-sm text-gray-900">{customer.email}</p>
-                      <p className="text-xs text-gray-500">{customer.phone}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
-                      {customer.orders}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="font-bold text-[#1b4b27]">
-                      GHC {customer.totalSpent.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="text-gray-600">{customer.lastOrder}</span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        customer.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {customer.status.charAt(0).toUpperCase() +
-                        customer.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="font-bold text-[#1b4b27]">
+                        GHC {customer.totalSpent.toLocaleString()}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="text-gray-600">
+                        {customer.lastOrder}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full font-medium ${
+                          customer.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {customer.status.charAt(0).toUpperCase() +
+                          customer.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <button
+                        onClick={() => setSelectedCustomer(customer.email)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        title="View Order History"
+                      >
                         <svg
                           className="w-5 h-5"
                           fill="none"
@@ -311,35 +331,115 @@ export default function AdminCustomers() {
                           />
                         </svg>
                       </button>
-                      <button className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors">
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredCustomers.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No customers found</p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+
+          {filteredCustomers.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No customers found</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Order History Modal */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Order History
+                </h2>
+                <p className="text-gray-600">{selectedCustomer}</p>
+              </div>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {customerOrderHistory.length === 0 ? (
+              <p className="text-center text-gray-600 py-8">
+                No orders found for this customer
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {customerOrderHistory.map((order) => (
+                  <div
+                    key={order.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="font-bold text-gray-900">
+                          Order #{order.id?.slice(0, 8)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {new Date(order.createdAt!).toLocaleDateString()} at{" "}
+                          {new Date(order.createdAt!).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium
+                        ${order.status === "pending" ? "bg-yellow-100 text-yellow-800" : ""}
+                        ${order.status === "processing" ? "bg-blue-100 text-blue-800" : ""}
+                        ${order.status === "completed" ? "bg-green-100 text-green-800" : ""}
+                        ${order.status === "cancelled" ? "bg-red-100 text-red-800" : ""}
+                      `}
+                      >
+                        {order.status.charAt(0).toUpperCase() +
+                          order.status.slice(1)}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="flex justify-between text-sm">
+                          <span className="text-gray-700">
+                            {item.name} x {item.quantity}
+                          </span>
+                          <span className="font-medium">
+                            GHC {(item.price * item.quantity).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="border-t pt-3">
+                      <div className="flex justify-between font-bold text-gray-900">
+                        <span>Total</span>
+                        <span>GHC {order.total.toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Payment: {order.paymentMethod}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

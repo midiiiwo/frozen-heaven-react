@@ -1,80 +1,109 @@
 import { Link } from "react-router";
 import type { Route } from "./+types/overview";
+import { useGetProducts } from "../../hooks/useProducts";
+import { useGetOrderStatistics, useGetOrders } from "../../hooks/useOrders";
+import { useMemo } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Admin Dashboard - Frozen Haven" }];
 }
 
 export default function AdminOverview() {
+  // Fetch data from Firebase
+  const { data: products, isLoading: productsLoading } = useGetProducts();
+  const { data: orderStats, isLoading: statsLoading } = useGetOrderStatistics();
+  const { data: orders, isLoading: ordersLoading } = useGetOrders();
+
+  // Calculate product statistics
+  const productStats = useMemo(() => {
+    if (!products) return { total: 0, lowStock: 0, outOfStock: 0 };
+
+    return {
+      total: products.length,
+      lowStock: products.filter((p) => p.stock > 0 && p.stock <= 10).length,
+      outOfStock: products.filter((p) => p.stock === 0).length,
+    };
+  }, [products]);
+
+  // Calculate top-selling products from orders
+  const topProducts = useMemo(() => {
+    if (!orders) return [];
+
+    // Create a map to track product sales
+    const productSales = new Map<
+      string,
+      { name: string; category: string; quantity: number; revenue: number }
+    >();
+
+    // Process all completed orders
+    orders
+      .filter((order) => order.status === "completed")
+      .forEach((order) => {
+        order.items.forEach((item) => {
+          const existing = productSales.get(item.id);
+          if (existing) {
+            existing.quantity += item.quantity;
+            existing.revenue += item.price * item.quantity;
+          } else {
+            productSales.set(item.id, {
+              name: item.name,
+              category: item.category,
+              quantity: item.quantity,
+              revenue: item.price * item.quantity,
+            });
+          }
+        });
+      });
+
+    // Convert to array and sort by revenue
+    return Array.from(productSales.entries())
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5); // Top 5 products
+  }, [orders]);
+
+  const isLoading = productsLoading || statsLoading || ordersLoading;
+
+  // Stats cards data
   const stats = [
     {
       label: "Total Products",
-      value: "125",
+      value: isLoading ? "..." : productStats.total.toString(),
       description: "Active inventory items",
-      trend: "+12%",
-      trendUp: true,
       color: "blue",
     },
     {
       label: "Low Stock Alert",
-      value: "8",
+      value: isLoading ? "..." : productStats.lowStock.toString(),
       description: "Items below threshold",
       color: "orange",
     },
     {
       label: "Out of Stock",
-      value: "3",
+      value: isLoading ? "..." : productStats.outOfStock.toString(),
       description: "Requires restocking",
       color: "red",
     },
     {
       label: "Pending Orders",
-      value: "23",
+      value: isLoading ? "..." : (orderStats?.pending || 0).toString(),
       description: "Awaiting processing",
-      trend: "-5%",
-      trendUp: false,
       color: "purple",
     },
   ];
 
   const revenueStats = [
     {
-      label: "Today's Revenue",
-      value: "GHC 15,750",
-      description: "vs yesterday",
-      trend: "+8.5%",
-      trendUp: true,
+      label: "Total Revenue",
+      value: isLoading
+        ? "GHC ..."
+        : `GHC ${orderStats?.totalRevenue.toLocaleString() || 0}`,
+      description: "From completed orders",
     },
     {
-      label: "Monthly Revenue",
-      value: "GHC 487,500",
-      description: "vs last month",
-      trend: "+15.3%",
-      trendUp: true,
-    },
-  ];
-
-  const topProducts = [
-    {
-      id: 1,
-      name: "Full Chicken",
-      category: "Poultry",
-      quantitySold: 156,
-      revenue: 31200,
-    },
-    {
-      id: 2,
-      name: "Salmon",
-      category: "SeaFood",
-      quantitySold: 89,
-      revenue: 31150,
-    },
-    {
-      id: 3,
-      name: "Gizzard",
-      category: "Meat",
-      quantitySold: 134,
-      revenue: 20100,
+      label: "Total Orders",
+      value: isLoading ? "..." : (orderStats?.total || 0).toString(),
+      description: "All time",
     },
   ];
 
@@ -161,9 +190,6 @@ export default function AdminOverview() {
                   />
                 </svg>
               </div>
-              <span className="text-sm font-semibold text-green-600">
-                {stat.trend}
-              </span>
             </div>
             <p className="text-gray-600 text-sm mb-1">{stat.label}</p>
             <h3 className="text-3xl font-bold text-[#1b4b27] mb-1">
@@ -236,39 +262,56 @@ export default function AdminOverview() {
               </tr>
             </thead>
             <tbody>
-              {topProducts.map((product) => (
-                <tr
-                  key={product.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="py-4 px-4">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {product.name}
-                      </p>
-                      <p className="text-xs text-gray-500">ID: {product.id}</p>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
-                      {product.category}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
-                        {product.quantitySold}
-                      </span>
-                      <span className="text-sm text-gray-500">units</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="font-bold text-[#1b4b27]">
-                      GHC {product.revenue.toLocaleString()}
-                    </p>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-gray-500">
+                    Loading top products...
                   </td>
                 </tr>
-              ))}
+              ) : topProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-gray-500">
+                    No sales data available yet. Complete some orders to see top
+                    selling products.
+                  </td>
+                </tr>
+              ) : (
+                topProducts.map((product) => (
+                  <tr
+                    key={product.id}
+                    className="border-b border-gray-100 hover:bg-gray-50"
+                  >
+                    <td className="py-4 px-4">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {product.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          ID: {product.id.slice(0, 8)}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                        {product.category}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
+                          {product.quantity}
+                        </span>
+                        <span className="text-sm text-gray-500">units</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="font-bold text-[#1b4b27]">
+                        GHC {product.revenue.toLocaleString()}
+                      </p>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
