@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { products } from "../constants/products";
+import { useCartStore } from "../stores/cartStore";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,6 +17,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const addToCart = useCartStore((state) => state.addToCart);
   const featuredProducts = products.slice(0, 4);
   const availableProducts = products.slice(0, 12);
 
@@ -198,7 +200,10 @@ export default function Home() {
                     <span className="text-xl font-bold text-gray-900">
                       GHC {product.price}
                     </span>
-                    <button className="px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm font-medium">
+                    <button
+                      onClick={() => addToCart(product)}
+                      className="px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm font-medium"
+                    >
                       Add to cart
                     </button>
                   </div>

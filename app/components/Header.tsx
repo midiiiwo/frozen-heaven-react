@@ -1,6 +1,8 @@
 import { Link } from "react-router";
+import { useCartStore } from "../stores/cartStore";
 
 export function Header() {
+  const getTotalItems = useCartStore((state) => state.getTotalItems);
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,7 +51,7 @@ export function Header() {
           {/* Cart Icon */}
           <Link
             to="/cart"
-            className="w-10 h-10 bg-[#1b4b27] rounded-md flex items-center justify-center text-white hover:bg-[#143820] transition-colors"
+            className="relative w-10 h-10 bg-[#1b4b27] rounded-md flex items-center justify-center text-white hover:bg-[#143820] transition-colors"
           >
             <svg
               width="20"
@@ -80,6 +82,11 @@ export function Header() {
                 strokeLinejoin="round"
               />
             </svg>
+            {getTotalItems() > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#f8ba07] text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {getTotalItems()}
+              </span>
+            )}
           </Link>
         </div>
       </div>

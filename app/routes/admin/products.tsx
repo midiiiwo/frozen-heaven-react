@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Route } from "./+types/products";
-import { products } from "../../data/products";
+import { products as productData } from "../../constants/products";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Products - Admin - Frozen Haven" }];
@@ -8,40 +8,84 @@ export function meta({}: Route.MetaArgs) {
 
 export default function AdminProducts() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = productData.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = [
+    "All",
+    ...Array.from(new Set(productData.map((p) => p.category))),
+  ];
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Products</h1>
-            <p className="text-gray-600">Manage your product inventory</p>
-          </div>
-          <button className="px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors font-medium">
-            + Add New Product
-          </button>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Products</h1>
+          <p className="text-gray-600">
+            Manage your product inventory and pricing
+          </p>
         </div>
+        <button className="px-6 py-3 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors font-medium">
+          Add New Product
+        </button>
+      </div>
 
-        {/* Search */}
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
-            />
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Search Products
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by product name..."
+                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+              />
+              <svg
+                className="w-5 h-5 text-gray-400 absolute left-3 top-2.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
           </div>
-          <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-            Filter
-          </button>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filter by Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+            >
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -50,23 +94,23 @@ export default function AdminProducts() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
                   Product
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
                   Category
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
                   Price
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
                   Stock
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
                   Status
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">
                   Actions
                 </th>
               </tr>
@@ -77,12 +121,12 @@ export default function AdminProducts() {
                   key={product.id}
                   className="border-b border-gray-100 hover:bg-gray-50"
                 >
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-12 h-12 rounded-md object-cover"
+                        className="w-12 h-12 object-cover rounded-md"
                       />
                       <div>
                         <p className="font-medium text-gray-900">
@@ -94,39 +138,46 @@ export default function AdminProducts() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-4">
-                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                  <td className="py-4 px-6">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
                       {product.category}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
-                    <p className="font-semibold text-gray-900">
+                  <td className="py-4 px-6">
+                    <span className="font-bold text-[#1b4b27]">
                       GHC {product.price}
-                    </p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="text-gray-900">{product.stock} units</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${
-                        product.stock > 20
-                          ? "bg-green-100 text-green-800"
-                          : product.stock > 10
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {product.stock > 20
-                        ? "In Stock"
-                        : product.stock > 10
-                          ? "Low Stock"
-                          : "Critical"}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
-                      <button className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                      <span
+                        className={`px-2 py-1 text-sm font-semibold rounded ${
+                          product.stock > 30
+                            ? "bg-green-100 text-green-800"
+                            : product.stock > 10
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {product.stock}
+                      </span>
+                      <span className="text-sm text-gray-500">units</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    {product.stock > 0 ? (
+                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                        In Stock
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full font-medium">
+                        Out of Stock
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-2">
+                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
                         <svg
                           className="w-5 h-5"
                           fill="none"
@@ -137,11 +188,11 @@ export default function AdminProducts() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                           />
                         </svg>
                       </button>
-                      <button className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors">
+                      <button className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors">
                         <svg
                           className="w-5 h-5"
                           fill="none"
@@ -163,27 +214,12 @@ export default function AdminProducts() {
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Pagination */}
-      <div className="mt-6 flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Showing {filteredProducts.length} of {products.length} products
-        </p>
-        <div className="flex gap-2">
-          <button className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm">
-            Previous
-          </button>
-          <button className="px-3 py-1 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm">
-            1
-          </button>
-          <button className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm">
-            2
-          </button>
-          <button className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm">
-            Next
-          </button>
-        </div>
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No products found</p>
+          </div>
+        )}
       </div>
     </div>
   );
