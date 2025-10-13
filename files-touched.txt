@@ -1,0 +1,23 @@
+# Files Touched During Integration
+
+## Task Management Files
+- customer-facing-tasks.md
+- admin-tasks.md
+- files-touched.txt
+
+## Configuration Files
+- .env.example (created)
+- FIREBASE-SETUP.md (created - comprehensive Firebase setup guide)
+
+## Files to be modified:
+
+### Cart & Store
+- app/stores/cartStore.ts (updated to use string IDs from Firebase)
+
+### Customer-Facing Pages
+- app/routes/shop.tsx (integrated Firebase products, added loading/error states)
+- app/routes/cart.tsx (updated to use Firebase product image paths, added stock validation and updates)
+
+### Admin Pages
+- app/routes/admin/orders.tsx (integrated Firebase orders API, added status management, order details modal)
+- app/routes/admin/products.tsx (integrated Firebase products API, added full CRUD operations, product form modal)

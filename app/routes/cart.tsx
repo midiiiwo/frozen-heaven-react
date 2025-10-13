@@ -4,8 +4,8 @@ import type { Route } from "./+types/cart";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { useCartStore } from "../stores/cartStore";
-import { useCreateOrder } from "../hooks/useOrderMutations";
-import type { Order } from "../types";
+import { useCreateOrder } from "../hooks/useOrders";
+import { getProductById, updateProductStock } from "../api/products";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -46,6 +46,28 @@ export default function Cart() {
       return;
     }
 
+    // Validate stock availability
+    try {
+      for (const item of items) {
+        const product = await getProductById(item.id!);
+        if (!product) {
+          alert(
+            `Product "${item.name}" not found. Please refresh and try again.`
+          );
+          return;
+        }
+        if (product.stock < item.quantity) {
+          alert(
+            `Insufficient stock for "${item.name}". Only ${product.stock} available.`
+          );
+          return;
+        }
+      }
+    } catch (error) {
+      alert("Failed to validate stock. Please try again.");
+      return;
+    }
+
     const subtotal = getTotalPrice();
     const deliveryFee = 20;
     const total = subtotal + deliveryFee;
@@ -66,14 +88,26 @@ export default function Cart() {
       status: "pending",
     };
 
-    const result = await createOrderMutation.mutateAsync(orderData);
+    try {
+      const result = await createOrderMutation.mutateAsync(orderData);
 
-    if (result) {
-      alert("Order placed successfully! Order ID: " + result.id);
-      clearCart();
-      setShowCheckout(false);
-      navigate("/shop");
-    } else {
+      if (result) {
+        // Update product stock after successful order
+        for (const item of items) {
+          const product = await getProductById(item.id!);
+          if (product) {
+            await updateProductStock(item.id!, product.stock - item.quantity);
+          }
+        }
+
+        alert("Order placed successfully! Order ID: " + result.id);
+        clearCart();
+        setShowCheckout(false);
+        navigate("/shop");
+      } else {
+        alert("Failed to place order. Please try again.");
+      }
+    } catch (error) {
       alert("Failed to place order. Please try again.");
     }
   };
@@ -165,9 +199,12 @@ export default function Cart() {
                 >
                   <div className="flex gap-6">
                     <img
-                      src={item.image}
+                      src={`/assets/products/${item.imageName}`}
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded-md"
+                      onError={(e) => {
+                        e.currentTarget.src = "/images/default-product.png";
+                      }}
                     />
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">

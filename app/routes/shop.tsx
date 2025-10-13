@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Route } from "./+types/shop";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { products, categories } from "../constants/products";
 import { useCartStore } from "../stores/cartStore";
+import { useGetProducts } from "../hooks/useProducts";
+import { getProductImage } from "../lib/imageHelper";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,21 +21,54 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [priceRange, setPriceRange] = useState("all");
 
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      selectedCategory === "All" || product.category === selectedCategory;
+  const { data: products, isLoading, error } = useGetProducts();
 
-    let matchesPrice = true;
-    if (priceRange === "0-200") {
-      matchesPrice = product.price >= 0 && product.price <= 200;
-    } else if (priceRange === "200-300") {
-      matchesPrice = product.price > 200 && product.price <= 300;
-    } else if (priceRange === "300+") {
-      matchesPrice = product.price > 300;
-    }
+  const categories = useMemo(() => {
+    if (!products) return ["All"];
+    const uniqueCategories = Array.from(
+      new Set(products.map((p) => p.category))
+    );
+    return ["All", ...uniqueCategories];
+  }, [products]);
 
-    return matchesCategory && matchesPrice;
-  });
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+
+    return products.filter((product) => {
+      const matchesCategory =
+        selectedCategory === "All" || product.category === selectedCategory;
+
+      let matchesPrice = true;
+      if (priceRange === "0-50") {
+        matchesPrice = product.price >= 0 && product.price <= 50;
+      } else if (priceRange === "50-100") {
+        matchesPrice = product.price > 50 && product.price <= 100;
+      } else if (priceRange === "100+") {
+        matchesPrice = product.price > 100;
+      }
+
+      return matchesCategory && matchesPrice && product.stock > 0;
+    });
+  }, [products, selectedCategory, priceRange]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 bg-white flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Error Loading Products
+            </h2>
+            <p className="text-gray-600">
+              Please try again later or contact support.
+            </p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -57,10 +91,10 @@ export default function Shop() {
               onChange={(e) => setPriceRange(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
             >
-              <option value="all">Select Price Range</option>
-              <option value="0-200">GHC 0 - 200</option>
-              <option value="200-300">GHC 200 - 300</option>
-              <option value="300+">GHC 300+</option>
+              <option value="all">All Prices</option>
+              <option value="0-50">GHC 0 - 50</option>
+              <option value="50-100">GHC 50 - 100</option>
+              <option value="100+">GHC 100+</option>
             </select>
           </div>
 
@@ -112,7 +146,23 @@ export default function Shop() {
 
             {/* Products Grid */}
             <div className="lg:col-span-3">
-              {filteredProducts.length === 0 ? (
+              {isLoading ? (
+                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-white border border-gray-200 rounded-lg overflow-hidden animate-pulse"
+                    >
+                      <div className="w-full h-48 bg-gray-200"></div>
+                      <div className="p-4">
+                        <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                        <div className="h-8 bg-gray-200 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-600 text-lg">
                     No products found matching your filters.
@@ -126,7 +176,7 @@ export default function Shop() {
                       className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
                     >
                       <img
-                        src={product.image}
+                        src={getProductImage(product.imageName)}
                         alt={product.name}
                         className="w-full h-48 object-cover"
                       />
@@ -142,17 +192,21 @@ export default function Shop() {
                         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                           {product.description}
                         </p>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-2">
                           <span className="text-xl font-bold text-gray-900">
                             GHC {product.price}
                           </span>
-                          <button
-                            onClick={() => addToCart(product)}
-                            className="px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm font-medium"
-                          >
-                            Add to cart
-                          </button>
+                          <span className="text-sm text-gray-600">
+                            Stock: {product.stock}
+                          </span>
                         </div>
+                        <button
+                          onClick={() => addToCart(product)}
+                          disabled={product.stock === 0}
+                          className="w-full px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {product.stock === 0 ? "Out of Stock" : "Add to cart"}
+                        </button>
                       </div>
                     </div>
                   ))}
