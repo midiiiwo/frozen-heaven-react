@@ -17,12 +17,17 @@ All major admin pages have been integrated with Firebase backend. The applicatio
 
 ### Cart & Store
 - app/stores/cartStore.ts (updated to use string IDs from Firebase)
+- app/stores/authStore.ts (created - admin authentication with email and 6-digit PIN)
 
 ### Customer-Facing Pages
+- app/routes/home.tsx (integrated Firebase products, added loading states, replaced hardcoded products with real data)
 - app/routes/shop.tsx (integrated Firebase products, added loading/error states)
 - app/routes/cart.tsx (updated to use Firebase product image paths, added stock validation and updates)
 
 ### Admin Pages
+- app/routes/admin-login.tsx (created - admin login page with email and PIN)
+- app/routes/admin-layout.tsx (updated - added auth protection and logout functionality)
+- app/routes/admin/analytics.tsx (integrated Firebase - real-time revenue, orders, customer stats, category performance)
 - app/routes/admin/orders.tsx (integrated Firebase orders API, added status management, order details modal)
 - app/routes/admin/products.tsx (integrated Firebase products API, added full CRUD operations, product form modal)
 - app/routes/admin/overview.tsx (integrated Firebase data - order stats, product stats, revenue, top-selling products)
@@ -30,3 +35,6 @@ All major admin pages have been integrated with Firebase backend. The applicatio
 - app/routes/admin/customers.tsx (integrated Firebase customers - order history, stats calculated from orders)
 - app/routes/admin/settings.tsx (integrated Firebase connection status, database stats, seeding functionality)
 - app/routes/admin/stock.tsx (integrated Firebase products - stock management, update functionality, filtering)
+
+### Routing
+- app/routes.ts (updated - added admin login route and protected admin routes)

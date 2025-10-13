@@ -2,8 +2,9 @@ import type { Route } from "./+types/home";
 import { Link } from "react-router";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { products } from "../constants/products";
 import { useCartStore } from "../stores/cartStore";
+import { useGetProducts } from "../hooks/useProducts";
+import { getProductImage } from "../lib/imageHelper";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,8 +19,10 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const addToCart = useCartStore((state) => state.addToCart);
-  const featuredProducts = products.slice(0, 4);
-  const availableProducts = products.slice(0, 12);
+  const { data: products, isLoading } = useGetProducts();
+
+  const featuredProducts = products?.slice(0, 4) || [];
+  const availableProducts = products?.slice(0, 12) || [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -173,44 +176,63 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
-              >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-bold text-gray-900">
-                      {product.name}
-                    </h3>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                      {product.category}
-                    </span>
-                  </div>
-                  <p className="text-gray-600 text-sm mb-4">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-gray-900">
-                      GHC {product.price}
-                    </span>
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm font-medium"
-                    >
-                      Add to cart
-                    </button>
+          {isLoading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-lg overflow-hidden shadow-md animate-pulse"
+                >
+                  <div className="w-full h-48 bg-gray-200" />
+                  <div className="p-4">
+                    <div className="h-6 bg-gray-200 rounded mb-2" />
+                    <div className="h-4 bg-gray-200 rounded mb-4" />
+                    <div className="h-8 bg-gray-200 rounded" />
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+                >
+                  <img
+                    src={getProductImage(product.imageName)}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {product.name}
+                      </h3>
+                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                        {product.category}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm mb-4">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold text-gray-900">
+                        GHC {product.price}
+                      </span>
+                      <button
+                        onClick={() => addToCart(product)}
+                        disabled={product.stock === 0}
+                        className="px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {product.stock === 0 ? "Out of Stock" : "Add to cart"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -221,34 +243,49 @@ export default function Home() {
             Available Products
           </h2>
           <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="grid sm:grid-cols-2 gap-4">
-              {availableProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+            {isLoading ? (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 p-3 animate-pulse"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
+                    <div className="w-6 h-6 bg-gray-200 rounded" />
+                    <div className="w-12 h-12 bg-gray-200 rounded-md" />
+                    <div className="h-5 bg-gray-200 rounded flex-1" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {availableProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <svg
+                      className="w-6 h-6 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <img
+                      src={getProductImage(product.imageName)}
+                      alt={product.name}
+                      className="w-12 h-12 rounded-md object-cover"
                     />
-                  </svg>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-12 h-12 rounded-md object-cover"
-                  />
-                  <h3 className="font-semibold text-gray-900">
-                    {product.name}
-                  </h3>
-                </div>
-              ))}
-            </div>
+                    <h3 className="font-semibold text-gray-900">
+                      {product.name}
+                    </h3>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>

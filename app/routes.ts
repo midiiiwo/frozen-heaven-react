@@ -11,7 +11,10 @@ export default [
   route("shop", "routes/shop.tsx"),
   route("cart", "routes/cart.tsx"),
 
-  // Admin routes
+  // Admin login
+  route("admin-login", "routes/admin-login.tsx"),
+
+  // Admin routes (protected)
   layout("routes/admin-layout.tsx", [
     route("admin", "routes/admin/overview.tsx"),
     route("admin/analytics", "routes/admin/analytics.tsx"),

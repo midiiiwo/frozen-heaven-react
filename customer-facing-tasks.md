@@ -39,8 +39,14 @@
 
 ## Completed
 
-- Shop page integrated with Firebase
-- Cart displays Firebase products
-- Loading and error states added
-- Stock availability shown
-- Category filtering working
+- [x] Home page integrated with Firebase
+- [x] Featured products using real Firebase data
+- [x] Available products list using real data
+- [x] Loading states for home page
+- [x] Shop page integrated with Firebase
+- [x] Cart displays Firebase products
+- [x] Loading and error states added
+- [x] Stock availability shown
+- [x] Category filtering working
+- [x] Checkout process with stock validation
+- [x] Order creation integrated with Firebase

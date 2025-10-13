@@ -1,11 +1,31 @@
-import { Outlet, Link, useLocation } from "react-router";
-import { useState } from "react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router";
+import { useState, useEffect } from "react";
+import { useAuthStore } from "../stores/authStore";
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isAuthenticated, adminEmail, logout } = useAuthStore();
+
+  // Check authentication on mount and navigation
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/admin-login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/admin-login");
+  };
 
   const isActive = (path: string) => location.pathname === path;
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const navItems = [
     {
@@ -168,18 +188,19 @@ export default function AdminLayout() {
           <div className="p-4 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-[#1b4b27] rounded-full flex items-center justify-center text-white font-bold">
-                A
+                {adminEmail?.charAt(0).toUpperCase() || "A"}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
                   Admin User
                 </p>
-                <p className="text-xs text-gray-500 truncate">
-                  admin@frozenhaven.com
-                </p>
+                <p className="text-xs text-gray-500 truncate">{adminEmail}</p>
               </div>
             </div>
-            <button className="w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors font-medium">
+            <button
+              onClick={handleLogout}
+              className="w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors font-medium"
+            >
               Logout
             </button>
           </div>

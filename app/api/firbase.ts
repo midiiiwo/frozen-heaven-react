@@ -1,9 +1,9 @@
-import { initializeApp } from "firebase/app";
+// app/api/firebase.ts
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics, isSupported } from "firebase/analytics";
 
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -13,13 +13,25 @@ export const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// prevent multiple inits
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Safe Firestore usage (works on SSR too)
 export const db = getFirestore(app);
 
+// Only import Auth when in the browser
+export const getFirebaseAuth = async () => {
+  if (typeof window === "undefined") return null;
+  const { getAuth } = await import("firebase/auth");
+  return getAuth(app);
+};
+
+// Analytics also must be guarded
 export async function initAnalytics() {
-  if (typeof window !== "undefined" && (await isSupported())) {
-    return getAnalytics(app);
+  if (typeof window !== "undefined") {
+    const { getAnalytics, isSupported } = await import("firebase/analytics");
+    if (await isSupported()) return getAnalytics(app);
   }
   return null;
 }

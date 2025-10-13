@@ -1,25 +1,143 @@
 import type { Route } from "./+types/analytics";
+import { useMemo } from "react";
+import { useGetOrders } from "../../hooks/useOrders";
+import { useGetProducts } from "../../hooks/useProducts";
+import { useGetCustomers } from "../../hooks/useCustomer";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Analytics - Admin - Frozen Haven" }];
 }
 
 export default function AdminAnalytics() {
-  const salesData = [
-    { month: "Jan", revenue: 45000, orders: 156 },
-    { month: "Feb", revenue: 52000, orders: 189 },
-    { month: "Mar", revenue: 48000, orders: 167 },
-    { month: "Apr", revenue: 61000, orders: 234 },
-    { month: "May", revenue: 55000, orders: 198 },
-    { month: "Jun", revenue: 67000, orders: 267 },
-  ];
+  const { data: orders, isLoading: ordersLoading } = useGetOrders();
+  const { data: products, isLoading: productsLoading } = useGetProducts();
+  const { data: customers, isLoading: customersLoading } = useGetCustomers();
 
-  const topCategories = [
-    { name: "Poultry", sales: 234, revenue: 46800, percentage: 35 },
-    { name: "Fish & Seafood", sales: 189, revenue: 56700, percentage: 28 },
-    { name: "Meat", sales: 156, revenue: 39000, percentage: 22 },
-    { name: "Processed Meat", sales: 98, revenue: 11760, percentage: 15 },
-  ];
+  const isLoading = ordersLoading || productsLoading || customersLoading;
+
+  // Calculate analytics data
+  const analytics = useMemo(() => {
+    if (!orders || !products) return null;
+
+    const completedOrders = orders.filter((o) => o.status === "completed");
+    const totalRevenue = completedOrders.reduce((sum, o) => sum + o.total, 0);
+    const totalOrders = orders.length;
+    const averageOrder =
+      totalOrders > 0 ? totalRevenue / completedOrders.length : 0;
+
+    // Get last 6 months data
+    const monthlyData = new Map<string, { revenue: number; orders: number }>();
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    completedOrders.forEach((order) => {
+      const date = order.createdAt ? new Date(order.createdAt) : new Date();
+      const monthYear = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+
+      if (!monthlyData.has(monthYear)) {
+        monthlyData.set(monthYear, { revenue: 0, orders: 0 });
+      }
+
+      const data = monthlyData.get(monthYear)!;
+      data.revenue += order.total;
+      data.orders += 1;
+    });
+
+    const salesData = Array.from(monthlyData.entries())
+      .map(([month, data]) => ({ month, ...data }))
+      .slice(-6);
+
+    // Calculate category performance
+    const categoryStats = new Map<string, { sales: number; revenue: number }>();
+
+    completedOrders.forEach((order) => {
+      order.items.forEach((item) => {
+        const category = item.category || "Other";
+        if (!categoryStats.has(category)) {
+          categoryStats.set(category, { sales: 0, revenue: 0 });
+        }
+        const stats = categoryStats.get(category)!;
+        stats.sales += item.quantity;
+        stats.revenue += item.price * item.quantity;
+      });
+    });
+
+    const totalCategoryRevenue = Array.from(categoryStats.values()).reduce(
+      (sum, stat) => sum + stat.revenue,
+      0
+    );
+
+    const topCategories = Array.from(categoryStats.entries())
+      .map(([name, stats]) => ({
+        name,
+        sales: stats.sales,
+        revenue: stats.revenue,
+        percentage:
+          totalCategoryRevenue > 0
+            ? Math.round((stats.revenue / totalCategoryRevenue) * 100)
+            : 0,
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+
+    return {
+      totalRevenue,
+      totalOrders,
+      averageOrder,
+      customerGrowth: customers?.length || 0,
+      salesData:
+        salesData.length > 0
+          ? salesData
+          : [{ month: "No data", revenue: 0, orders: 0 }],
+      topCategories: topCategories.length > 0 ? topCategories : [],
+    };
+  }, [orders, products, customers]);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 lg:p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
+          <p className="text-gray-600">Loading analytics data...</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+            >
+              <div className="h-4 bg-gray-200 rounded mb-4" />
+              <div className="h-8 bg-gray-200 rounded mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-32" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div className="p-6 lg:p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
+          <p className="text-gray-600">No data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8">
@@ -52,9 +170,11 @@ export default function AdminAnalytics() {
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">GHC 328,000</h3>
-          <p className="text-sm text-green-600 font-semibold mt-1">
-            ↑ 18.2% from last period
+          <h3 className="text-2xl font-bold text-gray-900">
+            GHC {analytics.totalRevenue.toLocaleString()}
+          </h3>
+          <p className="text-sm text-gray-600 font-semibold mt-1">
+            From completed orders
           </p>
         </div>
 
@@ -77,10 +197,10 @@ export default function AdminAnalytics() {
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">1,211</h3>
-          <p className="text-sm text-green-600 font-semibold mt-1">
-            ↑ 12.5% from last period
-          </p>
+          <h3 className="text-2xl font-bold text-gray-900">
+            {analytics.totalOrders}
+          </h3>
+          <p className="text-sm text-gray-600 font-semibold mt-1">All time</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -102,15 +222,17 @@ export default function AdminAnalytics() {
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">GHC 271</h3>
-          <p className="text-sm text-green-600 font-semibold mt-1">
-            ↑ 5.1% from last period
+          <h3 className="text-2xl font-bold text-gray-900">
+            GHC {Math.round(analytics.averageOrder)}
+          </h3>
+          <p className="text-sm text-gray-600 font-semibold mt-1">
+            Per completed order
           </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Customer Growth</span>
+            <span className="text-sm text-gray-600">Total Customers</span>
             <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
               <svg
                 className="w-5 h-5 text-orange-600"
@@ -127,9 +249,11 @@ export default function AdminAnalytics() {
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">+234</h3>
-          <p className="text-sm text-green-600 font-semibold mt-1">
-            ↑ 24.3% from last period
+          <h3 className="text-2xl font-bold text-gray-900">
+            {analytics.customerGrowth}
+          </h3>
+          <p className="text-sm text-gray-600 font-semibold mt-1">
+            Registered customers
           </p>
         </div>
       </div>
@@ -140,52 +264,80 @@ export default function AdminAnalytics() {
           <h2 className="text-xl font-bold text-gray-900 mb-6">
             Revenue Trend
           </h2>
-          <div className="space-y-4">
-            {salesData.map((data) => (
-              <div key={data.month}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.month}
-                  </span>
-                  <span className="text-sm font-bold text-[#1b4b27]">
-                    GHC {data.revenue.toLocaleString()}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-[#1b4b27] h-3 rounded-full transition-all"
-                    style={{ width: `${(data.revenue / 67000) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          {analytics.salesData.length > 0 &&
+          analytics.salesData[0].month !== "No data" ? (
+            <div className="space-y-4">
+              {analytics.salesData.map((data) => {
+                const maxRevenue = Math.max(
+                  ...analytics.salesData.map((d) => d.revenue)
+                );
+                return (
+                  <div key={data.month}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        {data.month}
+                      </span>
+                      <span className="text-sm font-bold text-[#1b4b27]">
+                        GHC {data.revenue.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-[#1b4b27] h-3 rounded-full transition-all"
+                        style={{
+                          width: `${maxRevenue > 0 ? (data.revenue / maxRevenue) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>No sales data available yet</p>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6">
             Orders by Month
           </h2>
-          <div className="space-y-4">
-            {salesData.map((data) => (
-              <div key={data.month}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.month}
-                  </span>
-                  <span className="text-sm font-bold text-blue-600">
-                    {data.orders} orders
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-blue-600 h-3 rounded-full transition-all"
-                    style={{ width: `${(data.orders / 267) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          {analytics.salesData.length > 0 &&
+          analytics.salesData[0].month !== "No data" ? (
+            <div className="space-y-4">
+              {analytics.salesData.map((data) => {
+                const maxOrders = Math.max(
+                  ...analytics.salesData.map((d) => d.orders)
+                );
+                return (
+                  <div key={data.month}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        {data.month}
+                      </span>
+                      <span className="text-sm font-bold text-blue-600">
+                        {data.orders} orders
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-blue-600 h-3 rounded-full transition-all"
+                        style={{
+                          width: `${maxOrders > 0 ? (data.orders / maxOrders) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>No order data available yet</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -203,61 +355,70 @@ export default function AdminAnalytics() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                  Category
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                  Sales
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                  Revenue
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                  Performance
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {topCategories.map((category) => (
-                <tr
-                  key={category.name}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="py-4 px-4">
-                    <span className="font-medium text-gray-900">
-                      {category.name}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
-                      {category.sales}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className="font-bold text-[#1b4b27]">
-                      GHC {category.revenue.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-green-600 h-2 rounded-full"
-                          style={{ width: `${category.percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-semibold text-gray-700 w-12">
-                        {category.percentage}%
-                      </span>
-                    </div>
-                  </td>
+          {analytics.topCategories.length > 0 ? (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                    Category
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                    Sales
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                    Revenue
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                    Performance
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {analytics.topCategories.map((category) => (
+                  <tr
+                    key={category.name}
+                    className="border-b border-gray-100 hover:bg-gray-50"
+                  >
+                    <td className="py-4 px-4">
+                      <span className="font-medium text-gray-900">
+                        {category.name}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded">
+                        {category.sales}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="font-bold text-[#1b4b27]">
+                        GHC {category.revenue.toLocaleString()}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-600 h-2 rounded-full"
+                            style={{ width: `${category.percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700 w-12">
+                          {category.percentage}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>No category data available yet</p>
+              <p className="text-sm mt-2">
+                Start selling to see category performance
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
