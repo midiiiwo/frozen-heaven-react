@@ -9,16 +9,14 @@ import {
   deleteCategory,
 } from "../api/categories";
 
-// Get all categories
 export const useGetCategories = () => {
   return useQuery({
     queryKey: ["categories"],
     queryFn: getAllCategories,
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 10,
   });
 };
 
-// Get category by ID
 export const useGetCategory = (id: string) => {
   return useQuery({
     queryKey: ["category", id],
@@ -27,7 +25,6 @@ export const useGetCategory = (id: string) => {
   });
 };
 
-// Create category mutation
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
@@ -39,7 +36,6 @@ export const useCreateCategory = () => {
   });
 };
 
-// Update category mutation
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
@@ -57,7 +53,6 @@ export const useUpdateCategory = () => {
   });
 };
 
-// Delete category mutation
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
 

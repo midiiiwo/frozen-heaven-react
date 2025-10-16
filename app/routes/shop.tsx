@@ -71,12 +71,11 @@ export default function Shop() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
       <div className="flex-1 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop</h1>
@@ -98,7 +97,6 @@ export default function Shop() {
           </div>
 
           <div className="grid lg:grid-cols-4 gap-8">
-            {/* Category Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-gray-50 rounded-lg p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -143,7 +141,6 @@ export default function Shop() {
               </div>
             </div>
 
-            {/* Products Grid */}
             <div className="lg:col-span-3">
               {isLoading ? (
                 <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">

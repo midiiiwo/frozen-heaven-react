@@ -21,18 +21,15 @@ export default function AdminCategories() {
     description: "",
   });
 
-  // Fetch data
   const { data: categories, isLoading: categoriesLoading } = useGetCategories();
   const { data: products, isLoading: productsLoading } = useGetProducts();
 
-  // Mutations
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
 
   const isLoading = categoriesLoading || productsLoading;
 
-  // Calculate product count for each category
   const categoriesWithCount = (categories || []).map((category) => ({
     ...category,
     productCount:
@@ -72,7 +69,6 @@ export default function AdminCategories() {
     }
 
     if (editingCategory) {
-      // Update category
       updateMutation.mutate(
         {
           id: editingCategory.id!,
@@ -89,7 +85,6 @@ export default function AdminCategories() {
         }
       );
     } else {
-      // Create category
       createMutation.mutate(formData, {
         onSuccess: () => {
           alert("Category created successfully!");
@@ -129,7 +124,6 @@ export default function AdminCategories() {
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Categories</h1>
@@ -145,7 +139,6 @@ export default function AdminCategories() {
         </button>
       </div>
 
-      {/* Search */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="relative">
           <input
@@ -171,14 +164,12 @@ export default function AdminCategories() {
         </div>
       </div>
 
-      {/* Loading State */}
       {isLoading && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <p className="text-gray-600">Loading categories...</p>
         </div>
       )}
 
-      {/* Categories Grid */}
       {!isLoading && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCategories.map((category) => (
@@ -247,7 +238,6 @@ export default function AdminCategories() {
         </div>
       )}
 
-      {/* Category Statistics */}
       {!isLoading && categoriesWithCount.length > 0 && (
         <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6">
@@ -287,7 +277,6 @@ export default function AdminCategories() {
         </div>
       )}
 
-      {/* Add/Edit Category Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">

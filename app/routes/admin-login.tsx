@@ -14,7 +14,6 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const pinInputs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) navigate("/admin");
   }, [isAuthenticated, navigate]);
@@ -95,7 +94,6 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1b4b27] via-[#1f5b2f] to-[#235f33] flex items-center justify-center p-4 relative">
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div
           className="absolute inset-0"
@@ -106,7 +104,6 @@ export default function AdminLogin() {
       </div>
 
       <div className="w-full max-w-md relative">
-        {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4">
             <svg
@@ -129,7 +126,6 @@ export default function AdminLogin() {
           <p className="text-green-100">Admin Portal</p>
         </div>
 
-        {/* Login Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -139,7 +135,6 @@ export default function AdminLogin() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Input */}
             <div>
               <label
                 htmlFor="email"
@@ -162,7 +157,6 @@ export default function AdminLogin() {
               />
             </div>
 
-            {/* PIN Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 6-Digit PIN
@@ -187,7 +181,6 @@ export default function AdminLogin() {
               </div>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
                 <svg
@@ -205,7 +198,6 @@ export default function AdminLogin() {
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -241,7 +233,6 @@ export default function AdminLogin() {
             </button>
           </form>
 
-          {/* Help Text */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Need help? Contact support at{" "}
@@ -255,7 +246,6 @@ export default function AdminLogin() {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="mt-6 text-center">
           <a
             href="/"

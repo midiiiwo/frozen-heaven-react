@@ -79,7 +79,6 @@ export default function AdminProducts() {
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Products</h1>
@@ -95,7 +94,6 @@ export default function AdminProducts() {
         </button>
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="grid md:grid-cols-2 gap-4">
           <div>
@@ -145,7 +143,6 @@ export default function AdminProducts() {
         </div>
       </div>
 
-      {/* Products Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center">
@@ -300,7 +297,6 @@ export default function AdminProducts() {
         )}
       </div>
 
-      {/* Add/Edit Product Modal */}
       {(showAddModal || showEditModal) && (
         <ProductFormModal
           isEdit={showEditModal}

@@ -9,16 +9,14 @@ import {
 } from "../api/customers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-// Get all customers
 export const useGetCustomers = () => {
   return useQuery({
     queryKey: ["customers"],
     queryFn: getAllCustomers,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 
-// Get customer by ID
 export const useGetCustomer = (id: string) => {
   return useQuery({
     queryKey: ["customer", id],
@@ -27,7 +25,6 @@ export const useGetCustomer = (id: string) => {
   });
 };
 
-// Get customer by email
 export const useGetCustomerByEmail = (email: string) => {
   return useQuery({
     queryKey: ["customer", "email", email],
@@ -36,7 +33,6 @@ export const useGetCustomerByEmail = (email: string) => {
   });
 };
 
-// Create customer mutation
 export const useCreateCustomer = () => {
   const queryClient = useQueryClient();
 
@@ -48,7 +44,6 @@ export const useCreateCustomer = () => {
   });
 };
 
-// Update customer mutation
 export const useUpdateCustomer = () => {
   const queryClient = useQueryClient();
 
@@ -66,7 +61,6 @@ export const useUpdateCustomer = () => {
   });
 };
 
-// Delete customer mutation
 export const useDeleteCustomer = () => {
   const queryClient = useQueryClient();
 

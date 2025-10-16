@@ -8,7 +8,6 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAuthenticated, logout } = useAuthStore();
 
-  // Check authentication on mount and navigation
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/admin-login");
@@ -22,7 +21,6 @@ export default function AdminLayout() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Don't render anything if not authenticated (will redirect)
   if (!isAuthenticated) {
     return null;
   }
@@ -58,7 +56,6 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Mobile Sidebar Toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#1b4b27] text-white rounded-md"
@@ -78,7 +75,6 @@ export default function AdminLayout() {
         </svg>
       </button>
 
-      {/* Sidebar */}
       <aside
         className={`
         fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200
@@ -87,7 +83,6 @@ export default function AdminLayout() {
       `}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="p-6 border-b border-gray-200">
             <Link to="/" className="flex items-center gap-2 text-[#1b4b27]">
               <div className="w-8 h-8 bg-[#1b4b27] rounded-full flex items-center justify-center">
@@ -111,7 +106,7 @@ export default function AdminLayout() {
                 <span className="font-bold text-lg">Frozen Haven</span>
               </div>
             </Link>
-            {/* Close button for mobile */}
+
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700"
@@ -132,7 +127,6 @@ export default function AdminLayout() {
             </button>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-4">
             {navItems.map((section, idx) => (
               <div key={idx} className="mb-6">
@@ -163,7 +157,6 @@ export default function AdminLayout() {
             ))}
           </nav>
 
-          {/* Quick Actions */}
           <div className="p-4 border-t border-gray-200">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">
               Quick Actions
@@ -184,7 +177,6 @@ export default function AdminLayout() {
             </div>
           </div>
 
-          {/* Admin User Info */}
           <div className="p-4 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-[#1b4b27] rounded-full flex items-center justify-center text-white font-bold">
@@ -207,7 +199,6 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-30"
@@ -215,7 +206,6 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Main Content */}
       <main className="flex-1 overflow-auto">
         <Outlet />
       </main>

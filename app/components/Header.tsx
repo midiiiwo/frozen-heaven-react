@@ -3,17 +3,16 @@ import { useCartStore } from "../stores/cartStore";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Header() {
-  const getTotalItems = useCartStore((state) => state.getTotalItems);
+  const totalItems = useCartStore((state) => state.getTotalItems());
   const location = useLocation();
 
   const isHome = location.pathname === "/";
   const isShop = location.pathname.startsWith("/shop");
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link
             to="/"
             className="flex items-center gap-2 text-[#1b4b27] hover:opacity-80 transition-opacity"
@@ -38,10 +37,8 @@ export function Header() {
             <span className="text-xl font-bold">Frozen Haven</span>
           </Link>
 
-          {/* Navigation */}
           <nav className="relative flex items-center gap-4 bg-gray-50 p-1 rounded-lg">
             <div className="relative flex items-center gap-2">
-              {/** Animated Background */}
               <AnimatePresence>
                 {(isHome || isShop) && (
                   <motion.div
@@ -61,7 +58,6 @@ export function Header() {
                 )}
               </AnimatePresence>
 
-              {/** Links */}
               <Link
                 to="/"
                 className={`relative z-10 px-4 py-2 rounded-md font-medium transition-colors ${
@@ -81,7 +77,6 @@ export function Header() {
             </div>
           </nav>
 
-          {/* Cart Icon */}
           <Link
             to="/cart"
             className="relative w-10 h-10 bg-[#1b4b27] rounded-md flex items-center justify-center text-white hover:bg-[#143820] transition-colors"
@@ -115,9 +110,9 @@ export function Header() {
                 strokeLinejoin="round"
               />
             </svg>
-            {getTotalItems() > 0 && (
+            {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 bg-[#f8ba07] text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {getTotalItems()}
+                {totalItems}
               </span>
             )}
           </Link>

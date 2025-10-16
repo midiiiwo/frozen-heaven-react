@@ -6,7 +6,6 @@ export const seedDatabase = async () => {
   try {
     console.log("Starting database seeding...");
 
-    // Seed categories first
     console.log("Seeding categories...");
     const categoryPromises = seedCategories.map((category) =>
       createCategory(category)
@@ -14,7 +13,6 @@ export const seedDatabase = async () => {
     await Promise.all(categoryPromises);
     console.log(`✓ Seeded ${seedCategories.length} categories`);
 
-    // Seed products
     console.log("Seeding products...");
     const productPromises = seedProducts.map((product) =>
       createProduct(product)

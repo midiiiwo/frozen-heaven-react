@@ -1,5 +1,4 @@
 export const seedProducts: Omit<Product, "id">[] = [
-  // Chicken Products
   {
     name: "Layer Chicken (Hard)",
     category: "Poultry",
@@ -57,7 +56,6 @@ export const seedProducts: Omit<Product, "id">[] = [
     stock: 30,
   },
 
-  // Turkey
   {
     name: "Turkey Wings",
     category: "Turkey",
@@ -67,7 +65,6 @@ export const seedProducts: Omit<Product, "id">[] = [
     stock: 25,
   },
 
-  // Fish & Seafood
   {
     name: "Red Fish",
     category: "Fish & Seafood",
@@ -117,7 +114,6 @@ export const seedProducts: Omit<Product, "id">[] = [
     stock: 20,
   },
 
-  // Sausages
   {
     name: "Royal Sausage",
     category: "Processed Meat",
@@ -151,7 +147,6 @@ export const seedProducts: Omit<Product, "id">[] = [
     stock: 55,
   },
 
-  // Beef Offals
   {
     name: "Sinews (Intini)",
     category: "Offals(Beef)",

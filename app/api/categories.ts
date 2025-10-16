@@ -14,14 +14,12 @@ import { db } from "./firbase";
 
 const COLLECTION_NAME = "categories";
 
-// Helper to convert Firebase Timestamp to Date
 const convertTimestamp = (data: any) => {
   if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
   if (data.updatedAt?.toDate) data.updatedAt = data.updatedAt.toDate();
   return data;
 };
 
-// Get all categories
 export const getAllCategories = async (): Promise<Category[]> => {
   try {
     const querySnapshot = await getDocs(
@@ -37,7 +35,6 @@ export const getAllCategories = async (): Promise<Category[]> => {
   }
 };
 
-// Get category by ID
 export const getCategoryById = async (id: string): Promise<Category | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
@@ -56,7 +53,6 @@ export const getCategoryById = async (id: string): Promise<Category | null> => {
   }
 };
 
-// Create category
 export const createCategory = async (
   category: Omit<Category, "id">
 ): Promise<Category | null> => {
@@ -80,7 +76,6 @@ export const createCategory = async (
   }
 };
 
-// Update category
 export const updateCategory = async (
   id: string,
   category: Partial<Category>
@@ -98,7 +93,6 @@ export const updateCategory = async (
   }
 };
 
-// Delete category
 export const deleteCategory = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);

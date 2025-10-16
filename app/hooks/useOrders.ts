@@ -11,16 +11,14 @@ import {
 } from "../api/orders";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
-// Get all orders
 export const useGetOrders = () => {
   return useQuery({
     queryKey: ["orders"],
     queryFn: getAllOrders,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 60 * 2,
   });
 };
 
-// Get order by ID
 export const useGetOrder = (id: string) => {
   return useQuery({
     queryKey: ["order", id],
@@ -29,7 +27,6 @@ export const useGetOrder = (id: string) => {
   });
 };
 
-// Get orders by status
 export const useGetOrdersByStatus = (status: Order["status"]) => {
   return useQuery({
     queryKey: ["orders", "status", status],
@@ -38,7 +35,6 @@ export const useGetOrdersByStatus = (status: Order["status"]) => {
   });
 };
 
-// Get orders by customer
 export const useGetOrdersByCustomer = (customerEmail: string) => {
   return useQuery({
     queryKey: ["orders", "customer", customerEmail],
@@ -47,16 +43,14 @@ export const useGetOrdersByCustomer = (customerEmail: string) => {
   });
 };
 
-// Get order statistics
 export const useGetOrderStatistics = () => {
   return useQuery({
     queryKey: ["orders", "statistics"],
     queryFn: getOrderStatistics,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 
-// Create order mutation
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
 
@@ -69,7 +63,6 @@ export const useCreateOrder = () => {
   });
 };
 
-// Update order mutation
 export const useUpdateOrder = () => {
   const queryClient = useQueryClient();
 
@@ -83,7 +76,6 @@ export const useUpdateOrder = () => {
   });
 };
 
-// Update order status mutation
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
 
@@ -97,7 +89,6 @@ export const useUpdateOrderStatus = () => {
   });
 };
 
-// Delete order mutation
 export const useDeleteOrder = () => {
   const queryClient = useQueryClient();
 

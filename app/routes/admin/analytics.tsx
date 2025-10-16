@@ -15,7 +15,6 @@ export default function AdminAnalytics() {
 
   const isLoading = ordersLoading || productsLoading || customersLoading;
 
-  // Calculate analytics data
   const analytics = useMemo(() => {
     if (!orders || !products) return null;
 
@@ -25,7 +24,6 @@ export default function AdminAnalytics() {
     const averageOrder =
       totalOrders > 0 ? totalRevenue / completedOrders.length : 0;
 
-    // Get last 6 months data
     const monthlyData = new Map<string, { revenue: number; orders: number }>();
     const monthNames = [
       "Jan",
@@ -59,7 +57,6 @@ export default function AdminAnalytics() {
       .map(([month, data]) => ({ month, ...data }))
       .slice(-6);
 
-    // Calculate category performance
     const categoryStats = new Map<string, { sales: number; revenue: number }>();
 
     completedOrders.forEach((order) => {
@@ -141,7 +138,6 @@ export default function AdminAnalytics() {
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics</h1>
         <p className="text-gray-600">
@@ -149,7 +145,6 @@ export default function AdminAnalytics() {
         </p>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
@@ -258,7 +253,6 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* Sales Chart */}
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6">
@@ -341,7 +335,6 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* Top Categories */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>

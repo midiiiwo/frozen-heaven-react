@@ -16,14 +16,12 @@ import { db } from "./firbase";
 
 const COLLECTION_NAME = "products";
 
-// Helper to convert Firebase Timestamp to Date
 const convertTimestamp = (data: any) => {
   if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
   if (data.updatedAt?.toDate) data.updatedAt = data.updatedAt.toDate();
   return data;
 };
 
-// Get all products
 export const getAllProducts = async (): Promise<Product[]> => {
   try {
     const querySnapshot = await getDocs(
@@ -39,7 +37,6 @@ export const getAllProducts = async (): Promise<Product[]> => {
   }
 };
 
-// Get product by ID
 export const getProductById = async (id: string): Promise<Product | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
@@ -58,7 +55,6 @@ export const getProductById = async (id: string): Promise<Product | null> => {
   }
 };
 
-// Get products by category
 export const getProductsByCategory = async (
   category: string
 ): Promise<Product[]> => {
@@ -83,7 +79,6 @@ export const getProductsByCategory = async (
   }
 };
 
-// Create product
 export const createProduct = async (
   product: Omit<Product, "id">
 ): Promise<Product | null> => {
@@ -107,7 +102,6 @@ export const createProduct = async (
   }
 };
 
-// Update product
 export const updateProduct = async (
   id: string,
   product: Partial<Product>
@@ -125,7 +119,6 @@ export const updateProduct = async (
   }
 };
 
-// Delete product
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
@@ -137,7 +130,6 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
   }
 };
 
-// Update product stock
 export const updateProductStock = async (
   id: string,
   stock: number
@@ -155,7 +147,6 @@ export const updateProductStock = async (
   }
 };
 
-// Search products
 export const searchProducts = async (
   searchTerm: string
 ): Promise<Product[]> => {

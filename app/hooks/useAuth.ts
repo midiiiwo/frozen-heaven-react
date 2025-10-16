@@ -1,4 +1,3 @@
-// src/hooks/useAuth.ts
 import { useMutation } from "@tanstack/react-query";
 import { loginAdmin } from "../api/auth";
 

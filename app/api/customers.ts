@@ -15,14 +15,12 @@ import { db } from "./firbase";
 
 const COLLECTION_NAME = "customers";
 
-// Helper to convert Firebase Timestamp to Date
 const convertTimestamp = (data: any) => {
   if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
   if (data.updatedAt?.toDate) data.updatedAt = data.updatedAt.toDate();
   return data;
 };
 
-// Get all customers
 export const getAllCustomers = async (): Promise<Customer[]> => {
   try {
     const querySnapshot = await getDocs(
@@ -38,7 +36,6 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
   }
 };
 
-// Get customer by ID
 export const getCustomerById = async (id: string): Promise<Customer | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
@@ -57,7 +54,6 @@ export const getCustomerById = async (id: string): Promise<Customer | null> => {
   }
 };
 
-// Get customer by email
 export const getCustomerByEmail = async (
   email: string
 ): Promise<Customer | null> => {
@@ -82,7 +78,6 @@ export const getCustomerByEmail = async (
   }
 };
 
-// Create customer
 export const createCustomer = async (
   customer: Omit<Customer, "id">
 ): Promise<Customer | null> => {
@@ -106,7 +101,6 @@ export const createCustomer = async (
   }
 };
 
-// Update customer
 export const updateCustomer = async (
   id: string,
   customer: Partial<Customer>
@@ -124,7 +118,6 @@ export const updateCustomer = async (
   }
 };
 
-// Delete customer
 export const deleteCustomer = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
@@ -136,7 +129,6 @@ export const deleteCustomer = async (id: string): Promise<boolean> => {
   }
 };
 
-// Search customers
 export const searchCustomers = async (
   searchTerm: string
 ): Promise<Customer[]> => {

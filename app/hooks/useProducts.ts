@@ -9,16 +9,14 @@ import {
   updateProductStock,
 } from "../api/products";
 
-// Get all products
 export const useGetProducts = () => {
   return useQuery({
     queryKey: ["products"],
     queryFn: getAllProducts,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };
 
-// Get product by ID
 export const useGetProduct = (id: string) => {
   return useQuery({
     queryKey: ["product", id],
@@ -27,7 +25,6 @@ export const useGetProduct = (id: string) => {
   });
 };
 
-// Get products by category
 export const useGetProductsByCategory = (category: string) => {
   return useQuery({
     queryKey: ["products", "category", category],
@@ -36,7 +33,6 @@ export const useGetProductsByCategory = (category: string) => {
   });
 };
 
-// Create product mutation
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
 
@@ -48,7 +44,6 @@ export const useCreateProduct = () => {
   });
 };
 
-// Update product mutation
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
 
@@ -61,7 +56,6 @@ export const useUpdateProduct = () => {
   });
 };
 
-// Delete product mutation
 export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
 
@@ -73,7 +67,6 @@ export const useDeleteProduct = () => {
   });
 };
 
-// Update product stock mutation
 export const useUpdateProductStock = () => {
   const queryClient = useQueryClient();
 

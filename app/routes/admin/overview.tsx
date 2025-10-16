@@ -9,12 +9,10 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function AdminOverview() {
-  // Fetch data from Firebase
   const { data: products, isLoading: productsLoading } = useGetProducts();
   const { data: orderStats, isLoading: statsLoading } = useGetOrderStatistics();
   const { data: orders, isLoading: ordersLoading } = useGetOrders();
 
-  // Calculate product statistics
   const productStats = useMemo(() => {
     if (!products) return { total: 0, lowStock: 0, outOfStock: 0 };
 
@@ -25,17 +23,14 @@ export default function AdminOverview() {
     };
   }, [products]);
 
-  // Calculate top-selling products from orders
   const topProducts = useMemo(() => {
     if (!orders) return [];
 
-    // Create a map to track product sales
     const productSales = new Map<
       string,
       { name: string; category: string; quantity: number; revenue: number }
     >();
 
-    // Process all completed orders
     orders
       .filter((order) => order.status === "completed")
       .forEach((order) => {
@@ -55,16 +50,14 @@ export default function AdminOverview() {
         });
       });
 
-    // Convert to array and sort by revenue
     return Array.from(productSales.entries())
       .map(([id, data]) => ({ id, ...data }))
       .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5); // Top 5 products
+      .slice(0, 5);
   }, [orders]);
 
   const isLoading = productsLoading || statsLoading || ordersLoading;
 
-  // Stats cards data
   const stats = [
     {
       label: "Total Products",
@@ -109,7 +102,6 @@ export default function AdminOverview() {
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Admin Dashboard
@@ -119,7 +111,6 @@ export default function AdminOverview() {
         </p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, idx) => (
           <div
@@ -150,13 +141,21 @@ export default function AdminOverview() {
                   />
                 </svg>
               </div>
-              {stat.trend && (
-                <span
-                  className={`text-sm font-semibold ${stat.trendUp ? "text-green-600" : "text-red-600"}`}
-                >
-                  {stat.trend}
-                </span>
-              )}
+
+              {
+                //@ts-ignore
+                stat.trend && (
+                  <span
+                    //@ts-ignore
+                    className={`text-sm font-semibold ${stat.trendUp ? "text-green-600" : "text-red-600"}`}
+                  >
+                    {
+                      //@ts-ignore
+                      stat.trend
+                    }
+                  </span>
+                )
+              }
             </div>
             <p className="text-gray-600 text-sm mb-1">{stat.label}</p>
             <h3 className="text-3xl font-bold text-gray-900 mb-1">
@@ -167,7 +166,6 @@ export default function AdminOverview() {
         ))}
       </div>
 
-      {/* Revenue Stats */}
       <div className="grid lg:grid-cols-3 gap-6 mb-8">
         {revenueStats.map((stat, idx) => (
           <div
@@ -199,7 +197,6 @@ export default function AdminOverview() {
           </div>
         ))}
 
-        {/* Quick Actions Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">
             Quick Actions
@@ -227,7 +224,6 @@ export default function AdminOverview() {
         </div>
       </div>
 
-      {/* Top Selling Products */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>

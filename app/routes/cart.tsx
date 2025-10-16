@@ -47,7 +47,6 @@ export default function Cart() {
       return;
     }
 
-    // Validate stock availability
     try {
       for (const item of items) {
         const product = await getProductById(item.id!);
@@ -115,7 +114,7 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <div className="flex-1 bg-gray-50 flex items-center justify-center py-16">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">

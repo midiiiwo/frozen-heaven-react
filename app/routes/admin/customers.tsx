@@ -11,13 +11,11 @@ export default function AdminCustomers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
-  // Fetch data
   const { data: customers, isLoading: customersLoading } = useGetCustomers();
   const { data: orders, isLoading: ordersLoading } = useGetOrders();
 
   const isLoading = customersLoading || ordersLoading;
 
-  // Calculate customer statistics from orders
   const customerStats = useMemo(() => {
     if (!orders || !customers) return [];
 
@@ -68,7 +66,6 @@ export default function AdminCustomers() {
     revenue: customerStats.reduce((sum, c) => sum + c.totalSpent, 0),
   };
 
-  // Get customer order history
   const customerOrderHistory = useMemo(() => {
     if (!selectedCustomer || !orders) return [];
     return orders.filter((order) => order.customerEmail === selectedCustomer);
@@ -76,7 +73,6 @@ export default function AdminCustomers() {
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Customers</h1>
@@ -86,7 +82,6 @@ export default function AdminCustomers() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
@@ -189,7 +184,6 @@ export default function AdminCustomers() {
         </div>
       </div>
 
-      {/* Search */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="relative">
           <input
@@ -215,14 +209,12 @@ export default function AdminCustomers() {
         </div>
       </div>
 
-      {/* Loading State */}
       {isLoading && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <p className="text-gray-600">Loading customers...</p>
         </div>
       )}
 
-      {/* Customers Table */}
       {!isLoading && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
@@ -346,7 +338,6 @@ export default function AdminCustomers() {
         </div>
       )}
 
-      {/* Order History Modal */}
       {selectedCustomer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto p-6">

@@ -25,10 +25,9 @@ export default function Home() {
   const availableProducts = products?.slice(0, 12) || [];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
-      {/* Hero Section */}
       <section className="bg-gradient-to-br from-[#f8ba07] to-[#f8ba07]/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -63,7 +62,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-[#1b4b27] mb-12">
@@ -148,7 +146,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Products */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
@@ -236,8 +233,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Available Products */}
-      <section className="py-16 bg-[#fad3aa]/30">
+      <section className="py-16 bg-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-[#1b4b27] mb-12">
             Available Products
@@ -290,7 +286,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 bg-[#1b4b27] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">

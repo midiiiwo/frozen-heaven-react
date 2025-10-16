@@ -15,14 +15,12 @@ import { db } from "./firbase";
 
 const COLLECTION_NAME = "orders";
 
-// Helper to convert Firebase Timestamp to Date
 const convertTimestamp = (data: any) => {
   if (data.createdAt?.toDate) data.createdAt = data.createdAt.toDate();
   if (data.updatedAt?.toDate) data.updatedAt = data.updatedAt.toDate();
   return data;
 };
 
-// Get all orders
 export const getAllOrders = async (): Promise<Order[]> => {
   try {
     const querySnapshot = await getDocs(
@@ -38,7 +36,6 @@ export const getAllOrders = async (): Promise<Order[]> => {
   }
 };
 
-// Get order by ID
 export const getOrderById = async (id: string): Promise<Order | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
@@ -57,7 +54,6 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
   }
 };
 
-// Get orders by status
 export const getOrdersByStatus = async (
   status: Order["status"]
 ): Promise<Order[]> => {
@@ -78,7 +74,6 @@ export const getOrdersByStatus = async (
   }
 };
 
-// Get orders by customer email
 export const getOrdersByCustomer = async (
   customerEmail: string
 ): Promise<Order[]> => {
@@ -99,7 +94,6 @@ export const getOrdersByCustomer = async (
   }
 };
 
-// Create order
 export const createOrder = async (
   order: Omit<Order, "id">
 ): Promise<Order | null> => {
@@ -123,7 +117,6 @@ export const createOrder = async (
   }
 };
 
-// Update order
 export const updateOrder = async (
   id: string,
   order: Partial<Order>
@@ -141,7 +134,6 @@ export const updateOrder = async (
   }
 };
 
-// Update order status
 export const updateOrderStatus = async (
   id: string,
   status: Order["status"]
@@ -159,7 +151,6 @@ export const updateOrderStatus = async (
   }
 };
 
-// Delete order
 export const deleteOrder = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
@@ -171,7 +162,6 @@ export const deleteOrder = async (id: string): Promise<boolean> => {
   }
 };
 
-// Get order statistics
 export const getOrderStatistics = async () => {
   try {
     const allOrders = await getAllOrders();

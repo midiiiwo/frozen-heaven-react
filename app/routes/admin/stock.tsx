@@ -75,7 +75,6 @@ export default function AdminStock() {
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Stock Management
@@ -83,7 +82,6 @@ export default function AdminStock() {
         <p className="text-gray-600">Monitor and manage inventory levels</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
@@ -186,7 +184,6 @@ export default function AdminStock() {
         </div>
       </div>
 
-      {/* Filter Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 mb-6 inline-flex gap-2">
         <button
           onClick={() => setFilter("all")}
@@ -230,14 +227,12 @@ export default function AdminStock() {
         </button>
       </div>
 
-      {/* Loading State */}
       {isLoading && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <p className="text-gray-600">Loading products...</p>
         </div>
       )}
 
-      {/* Stock Table */}
       {!isLoading && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
@@ -337,7 +332,6 @@ export default function AdminStock() {
         </div>
       )}
 
-      {/* Restock Modal */}
       {restockProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">

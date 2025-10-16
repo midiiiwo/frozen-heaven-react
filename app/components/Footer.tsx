@@ -5,7 +5,6 @@ export function Footer() {
     <footer className="bg-[#1b4b27] text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Quick Links */}
           <div>
             <h3 className="text-lg font-bold mb-4">Quick Links</h3>
             <div className="flex flex-col gap-2">
@@ -21,7 +20,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Contact Info */}
           <div>
             <h3 className="text-lg font-bold mb-4">Contact Info</h3>
             <div className="flex flex-col gap-2">
@@ -38,7 +36,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Business Hours */}
           <div>
             <h3 className="text-lg font-bold mb-4">Business Hours</h3>
             <div className="flex flex-col gap-2">
@@ -50,7 +47,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="mt-8 pt-8 border-t border-white/20 text-center">
           <p>© 2025 Frozen Haven. All rights reserved.</p>
         </div>

@@ -122,13 +122,11 @@ export default function AdminSettings() {
   const [seeding, setSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState("");
 
-  // Fetch data for stats
   const { data: products } = useGetProducts();
   const { data: orders } = useGetOrders();
   const { data: categories } = useGetCategories();
   const { data: customers } = useGetCustomers();
 
-  // Check Firebase connection
   const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -166,7 +164,6 @@ export default function AdminSettings() {
         </p>
       </div>
 
-      {/* Firebase Connection Status */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Firebase Connection
@@ -200,7 +197,6 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* Database Statistics */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Database Statistics
@@ -233,8 +229,7 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* Database Management Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Database Management
         </h2>
@@ -265,7 +260,7 @@ export default function AdminSettings() {
             to your database. Existing data will not be duplicated.
           </p>
         </div>
-      </div>
+      </div> */}
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
