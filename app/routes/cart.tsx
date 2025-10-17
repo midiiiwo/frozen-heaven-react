@@ -11,6 +11,7 @@ import {
   createCustomer,
   updateCustomer,
 } from "../api/customers";
+import toast from "react-hot-toast";
 
 export function meta() {
   return [
@@ -84,7 +85,7 @@ export default function Cart() {
       !customerInfo.phone ||
       !customerInfo.address
     ) {
-      alert("Please fill in all customer information");
+      toast.error("Please fill in all customer information");
       return;
     }
 
@@ -92,27 +93,27 @@ export default function Cart() {
       for (const item of items) {
         const product = await getProductById(item.id!);
         if (!product) {
-          alert(
+          toast.error(
             `Product "${item.name}" not found. Please refresh and try again.`
           );
           return;
         }
         if (product.stock < item.quantity) {
-          alert(
+          toast.error(
             `Insufficient stock for "${item.name}". Only ${product.stock} available.`
           );
           return;
         }
       }
     } catch (error) {
-      alert("Failed to validate stock. Please try again.");
+      toast.error("Failed to validate stock. Please try again.");
       return;
     }
 
     // Create or update customer record
     try {
       if (existingCustomer) {
-        // Update existing customer if any info changed
+        //@ts-ignore
         await updateCustomer(existingCustomer.id, {
           name: customerInfo.name,
           email: customerInfo.email,
@@ -166,18 +167,21 @@ export default function Cart() {
         }
 
         if (paymentMethod === "mobile_money") {
+          //@ts-ignore
           setOrderId(result.id);
         } else {
-          alert("Order placed successfully! Order ID: " + result.id);
+          toast.success("Order placed successfully! Order ID: " + result.id, {
+            duration: 5000,
+          });
           clearCart();
           setShowCheckout(false);
           navigate("/shop");
         }
       } else {
-        alert("Failed to place order. Please try again.");
+        toast.error("Failed to place order. Please try again.");
       }
     } catch (error) {
-      alert("Failed to place order. Please try again.");
+      toast.error("Failed to place order. Please try again.");
     }
   };
 

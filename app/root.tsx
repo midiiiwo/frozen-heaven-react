@@ -12,6 +12,7 @@ import "./app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import { initAnalytics } from "./api/firbase";
+import { Toaster } from "react-hot-toast";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#fff",
+            color: "#1b4b27",
+            border: "1px solid #e5e7eb",
+          },
+          success: {
+            style: {
+              background: "#f0fdf4",
+              border: "1px solid #86efac",
+            },
+            iconTheme: {
+              primary: "#1b4b27",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            style: {
+              background: "#fef2f2",
+              border: "1px solid #fca5a5",
+            },
+            iconTheme: {
+              primary: "#dc2626",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
       <Outlet />
     </QueryClientProvider>
   );

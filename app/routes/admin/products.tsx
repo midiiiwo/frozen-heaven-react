@@ -7,6 +7,9 @@ import {
   useDeleteProduct,
 } from "../../hooks/useProducts";
 import { getProductImage } from "../../lib/imageHelper";
+import toast from "react-hot-toast";
+import { useConfirmationModal } from "../../hooks/useConfirmationModal";
+import ConfirmationModal from "../../components/ConfirmationDialog";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Products - Admin - Frozen Haven" }];
@@ -23,6 +26,7 @@ export default function AdminProducts() {
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
+  const { modalProps, showConfirmation } = useConfirmationModal();
 
   const categories = useMemo(() => {
     if (!products) return ["All"];
@@ -46,20 +50,20 @@ export default function AdminProducts() {
   }, [products, searchQuery, selectedCategory]);
 
   const handleDeleteProduct = (id: string, name: string) => {
-    if (
-      confirm(
-        `Are you sure you want to delete "${name}"? This action cannot be undone.`
-      )
-    ) {
-      deleteProduct.mutate(id, {
-        onSuccess: () => {
-          alert("Product deleted successfully!");
-        },
-        onError: () => {
-          alert("Failed to delete product. Please try again.");
-        },
-      });
-    }
+    showConfirmation({
+      title: "Delete Product",
+      message: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      variant: "danger",
+      confirmText: "Delete",
+      onConfirm: async () => {
+        try {
+          await deleteProduct.mutateAsync(id);
+          toast.success("Product deleted successfully!");
+        } catch (error) {
+          toast.error("Failed to delete product. Please try again.");
+        }
+      },
+    });
   };
 
   if (error) {
@@ -312,29 +316,31 @@ export default function AdminProducts() {
                 { id: selectedProduct.id!, product: productData },
                 {
                   onSuccess: () => {
-                    alert("Product updated successfully!");
+                    toast.success("Product updated successfully!");
                     setShowEditModal(false);
                     setSelectedProduct(null);
                   },
                   onError: () => {
-                    alert("Failed to update product. Please try again.");
+                    toast.error("Failed to update product. Please try again.");
                   },
                 }
               );
             } else {
               createProduct.mutate(productData, {
                 onSuccess: () => {
-                  alert("Product created successfully!");
+                  toast.success("Product created successfully!");
                   setShowAddModal(false);
                 },
                 onError: () => {
-                  alert("Failed to create product. Please try again.");
+                  toast.error("Failed to create product. Please try again.");
                 },
               });
             }
           }}
         />
       )}
+
+      <ConfirmationModal {...modalProps} />
     </div>
   );
 }
@@ -362,7 +368,7 @@ function ProductFormModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.category || formData.price <= 0) {
-      alert("Please fill in all required fields correctly");
+      toast.error("Please fill in all required fields correctly");
       return;
     }
     onSubmit(formData);

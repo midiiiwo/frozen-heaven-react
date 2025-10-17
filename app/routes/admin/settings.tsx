@@ -113,6 +113,9 @@ import { useGetProducts } from "../../hooks/useProducts";
 import { useGetOrders } from "../../hooks/useOrders";
 import { useGetCategories } from "../../hooks/useCetegory";
 import { useGetCustomers } from "../../hooks/useCustomer";
+import toast from "react-hot-toast";
+import { useConfirmationModal } from "../../hooks/useConfirmationModal";
+import ConfirmationModal from "../../components/ConfirmationDialog";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Settings - Admin - Frozen Haven" }];
@@ -126,6 +129,7 @@ export default function AdminSettings() {
   const { data: orders } = useGetOrders();
   const { data: categories } = useGetCategories();
   const { data: customers } = useGetCustomers();
+  const { modalProps, showConfirmation } = useConfirmationModal();
 
   const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -139,20 +143,29 @@ export default function AdminSettings() {
     firebaseConfig.projectId
   );
 
-  const handleSeedDatabase = async () => {
-    if (
-      confirm(
-        "Are you sure you want to seed the database? This will add products and categories."
-      )
-    ) {
-      setSeeding(true);
-      setSeedMessage("");
+  const handleSeedDatabase = () => {
+    showConfirmation({
+      title: "Seed Database",
+      message:
+        "Are you sure you want to seed the database? This will add products and categories.",
+      variant: "warning",
+      confirmText: "Seed Database",
+      onConfirm: async () => {
+        setSeeding(true);
+        setSeedMessage("");
 
-      const result = await seedDatabase();
+        const result = await seedDatabase();
 
-      setSeedMessage(result.message);
-      setSeeding(false);
-    }
+        setSeedMessage(result.message);
+        setSeeding(false);
+
+        if (result.message.includes("Error")) {
+          toast.error(result.message);
+        } else {
+          toast.success(result.message);
+        }
+      },
+    });
   };
 
   return (
@@ -302,6 +315,8 @@ export default function AdminSettings() {
           </button>
         </div>
       </div>
+
+      <ConfirmationModal {...modalProps} />
     </div>
   );
 }

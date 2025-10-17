@@ -187,6 +187,7 @@ export const getOrderStatistics = async () => {
       completed: 0,
       cancelled: 0,
       totalRevenue: 0,
+      pay_later: 0,
     };
   }
 };

@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import type { Route } from "./+types/stock";
 import { useGetProducts, useUpdateProductStock } from "../../hooks/useProducts";
 import { getProductImage } from "../../lib/imageHelper";
+import toast from "react-hot-toast";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Stock Management - Admin - Frozen Haven" }];
@@ -51,7 +52,7 @@ export default function AdminStock() {
 
     const stockValue = parseInt(newStock);
     if (isNaN(stockValue) || stockValue < 0) {
-      alert("Please enter a valid stock quantity");
+      toast.error("Please enter a valid stock quantity");
       return;
     }
 
@@ -62,12 +63,12 @@ export default function AdminStock() {
       },
       {
         onSuccess: () => {
-          alert("Stock updated successfully!");
+          toast.success("Stock updated successfully!");
           setRestockProduct(null);
           setNewStock("");
         },
         onError: () => {
-          alert("Failed to update stock");
+          toast.error("Failed to update stock");
         },
       }
     );

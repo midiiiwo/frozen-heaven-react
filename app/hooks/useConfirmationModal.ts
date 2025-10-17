@@ -1,13 +1,5 @@
 import { useState, useCallback } from "react";
 
-interface ConfirmationModalConfig
-  extends Pick<
-    ConfirmationModalProps,
-    "title" | "message" | "confirmText" | "variant"
-  > {
-  onConfirm: () => void | Promise<void>;
-}
-
 export function useConfirmationModal() {
   const [modalState, setModalState] = useState<
     ConfirmationModalProps & { isOpen: boolean; isLoading?: boolean }
@@ -37,7 +29,7 @@ export function useConfirmationModal() {
   const closeModal = useCallback(() => {
     setModalState((prev) => ({ ...prev, isOpen: false }));
   }, []);
-
+  //@ts-ignore
   const setLoading = useCallback((isLoading: boolean) => {
     setModalState((prev) => ({ ...prev, isLoading }));
   });

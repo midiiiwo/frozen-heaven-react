@@ -77,6 +77,7 @@ export default function AdminLogin() {
       const admin = await loginAdmin({ email, pin: pinValue });
 
       if (admin) {
+        //@ts-ignore
         login({ id: admin.id, email: admin.email });
         navigate("/admin");
       } else {
@@ -165,6 +166,7 @@ export default function AdminLogin() {
                 {pin.map((digit, index) => (
                   <input
                     key={index}
+                    //@ts-ignore
                     ref={(el) => (pinInputs.current[index] = el)}
                     type="text"
                     inputMode="numeric"

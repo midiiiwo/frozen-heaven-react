@@ -5,6 +5,7 @@ import { Footer } from "../components/Footer";
 import { useCartStore } from "../stores/cartStore";
 import { useGetProducts } from "../hooks/useProducts";
 import { getProductImage } from "../lib/imageHelper";
+import toast from "react-hot-toast";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,6 +23,11 @@ export default function Shop() {
   const [priceRange, setPriceRange] = useState("all");
 
   const { data: products, isLoading, error } = useGetProducts();
+
+  const handleAddToCart = (product: Product) => {
+    addToCart(product);
+    toast.success(`${product.name} added to cart!`);
+  };
 
   const categories = useMemo(() => {
     if (!products) return ["All"];
@@ -197,7 +203,7 @@ export default function Shop() {
                           </span>
                         </div>
                         <button
-                          onClick={() => addToCart(product)}
+                          onClick={() => handleAddToCart(product)}
                           disabled={product.stock === 0}
                           className="w-full px-4 py-2 bg-[#1b4b27] text-white rounded-md hover:bg-[#143820] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >

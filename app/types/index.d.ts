@@ -44,7 +44,7 @@ interface Order {
   deliveryFee: number;
   total: number;
   paymentMethod: "cash" | "card" | "mobile_money";
-  status: "pending" | "processing" | "completed" | "cancelled";
+  status: "pending" | "processing" | "completed" | "cancelled" | "pay_later";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -54,6 +54,7 @@ interface OrderStatus {
   processing: number;
   completed: number;
   cancelled: number;
+  pay_later: number;
 }
 
 interface Analytics {
@@ -74,4 +75,12 @@ interface ConfirmationModalProps {
   cancelText?: string;
   variant?: "default" | "danger" | "success" | "warning";
   isLoading?: boolean;
+}
+
+interface ConfirmationModalConfig
+  extends Pick<
+    ConfirmationModalProps,
+    "title" | "message" | "confirmText" | "variant"
+  > {
+  onConfirm: () => void | Promise<void>;
 }
