@@ -106,7 +106,7 @@ export default function AdminProducts() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by product name..."
-                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900 placeholder:text-gray-500"
               />
               <svg
                 className="w-5 h-5 text-gray-400 absolute left-3 top-2.5"
@@ -409,7 +409,7 @@ function ProductFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900 placeholder:text-gray-500"
                 placeholder="e.g., Layer Chicken"
                 required
               />
@@ -425,7 +425,7 @@ function ProductFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900 placeholder:text-gray-500"
                 placeholder="e.g., Poultry"
                 required
               />
@@ -447,7 +447,7 @@ function ProductFormModal({
                       price: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900"
                   required
                 />
               </div>
@@ -466,7 +466,7 @@ function ProductFormModal({
                       stock: parseInt(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900"
                   required
                 />
               </div>
@@ -481,7 +481,7 @@ function ProductFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900 placeholder:text-gray-500"
                 rows={3}
                 placeholder="Product description"
                 required
@@ -498,7 +498,7 @@ function ProductFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, imageName: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27]"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900 placeholder:text-gray-500"
                 placeholder="e.g., chicken-wings.png"
               />
               <p className="mt-1 text-sm text-gray-500">

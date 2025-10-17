@@ -78,6 +78,30 @@ export const getCustomerByEmail = async (
   }
 };
 
+export const getCustomerByPhone = async (
+  phone: string
+): Promise<Customer | null> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("phone", "==", phone)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const doc = querySnapshot.docs[0];
+      return {
+        id: doc.id,
+        ...convertTimestamp(doc.data()),
+      } as Customer;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching customer by phone:", error);
+    return null;
+  }
+};
+
 export const createCustomer = async (
   customer: Omit<Customer, "id">
 ): Promise<Customer | null> => {

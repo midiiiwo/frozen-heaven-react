@@ -1,17 +1,5 @@
 import { useEffect } from "react";
 
-export interface ConfirmationModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: "default" | "danger" | "success" | "warning";
-  isLoading?: boolean;
-}
-
 export default function ConfirmationModal({
   isOpen,
   onClose,
@@ -23,7 +11,6 @@ export default function ConfirmationModal({
   variant = "default",
   isLoading = false,
 }: ConfirmationModalProps) {
-  // Handle ESC key press
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -129,8 +116,8 @@ export default function ConfirmationModal({
   const variantStyles = getVariantStyles();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full mx-auto transform transition-all">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full mx-auto transform transition-all shadow-2xl">
         <div className="p-6">
           {variantStyles.icon}
           <h3 className="text-lg font-bold text-gray-900 text-center mb-2">

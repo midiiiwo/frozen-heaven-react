@@ -1,11 +1,16 @@
 import { Link, useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { useCartStore } from "../stores/cartStore";
 import { useCreateOrder } from "../hooks/useOrders";
 import { getProductById, updateProductStock } from "../api/products";
 import { getProductImage } from "~/lib/imageHelper";
+import {
+  getCustomerByPhone,
+  createCustomer,
+  updateCustomer,
+} from "../api/customers";
 
 export function meta() {
   return [
@@ -33,8 +38,44 @@ export default function Cart() {
     "cash"
   );
   const [orderId, setOrderId] = useState("");
+  const [existingCustomer, setExistingCustomer] = useState<Customer | null>(
+    null
+  );
+  const [checkingPhone, setCheckingPhone] = useState(false);
 
   const createOrderMutation = useCreateOrder();
+
+  // Check for existing customer when phone number changes
+  useEffect(() => {
+    const checkExistingCustomer = async () => {
+      if (customerInfo.phone.length >= 10) {
+        setCheckingPhone(true);
+        try {
+          const customer = await getCustomerByPhone(customerInfo.phone);
+          if (customer) {
+            setExistingCustomer(customer);
+            setCustomerInfo({
+              phone: customerInfo.phone,
+              name: customer.name,
+              email: customer.email,
+              address: customer.address,
+            });
+          } else {
+            setExistingCustomer(null);
+          }
+        } catch (error) {
+          console.error("Error checking customer:", error);
+        } finally {
+          setCheckingPhone(false);
+        }
+      } else {
+        setExistingCustomer(null);
+      }
+    };
+
+    const debounceTimer = setTimeout(checkExistingCustomer, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [customerInfo.phone]);
 
   const handleCheckout = async () => {
     if (
@@ -66,6 +107,30 @@ export default function Cart() {
     } catch (error) {
       alert("Failed to validate stock. Please try again.");
       return;
+    }
+
+    // Create or update customer record
+    try {
+      if (existingCustomer) {
+        // Update existing customer if any info changed
+        await updateCustomer(existingCustomer.id, {
+          name: customerInfo.name,
+          email: customerInfo.email,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+        });
+      } else {
+        // Create new customer
+        await createCustomer({
+          name: customerInfo.name,
+          email: customerInfo.email,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+        });
+      }
+    } catch (error) {
+      console.error("Error saving customer:", error);
+      // Continue with order even if customer save fails
     }
 
     const subtotal = getTotalPrice();
@@ -509,8 +574,34 @@ export default function Cart() {
                     <div className="space-y-4 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                          {" "}
-                          {/* Changed from text-gray-700 to text-gray-900 */}
+                          Phone Number *
+                        </label>
+                        <input
+                          type="tel"
+                          value={customerInfo.phone}
+                          onChange={(e) =>
+                            setCustomerInfo({
+                              ...customerInfo,
+                              phone: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900"
+                          placeholder="+233 XX XXX XXXX"
+                        />
+                        {checkingPhone && (
+                          <p className="text-sm text-blue-600 mt-1">
+                            Checking customer...
+                          </p>
+                        )}
+                        {existingCustomer && (
+                          <p className="text-sm text-green-600 mt-1">
+                            ✓ Welcome back! Your details have been loaded.
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-2">
                           Full Name
                         </label>
                         <input
@@ -522,15 +613,14 @@ export default function Cart() {
                               name: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900" // Added text-gray-900
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900"
                           placeholder="John Doe"
+                          readOnly={!!existingCustomer}
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                          {" "}
-                          {/* Changed from text-gray-700 to text-gray-900 */}
                           Email
                         </label>
                         <input
@@ -542,35 +632,14 @@ export default function Cart() {
                               email: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900" // Added text-gray-900
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900"
                           placeholder="john@example.com"
+                          readOnly={!!existingCustomer}
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                          {" "}
-                          {/* Changed from text-gray-700 to text-gray-900 */}
-                          Phone
-                        </label>
-                        <input
-                          type="tel"
-                          value={customerInfo.phone}
-                          onChange={(e) =>
-                            setCustomerInfo({
-                              ...customerInfo,
-                              phone: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900" // Added text-gray-900
-                          placeholder="+233 XX XXX XXXX"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-2">
-                          {" "}
-                          {/* Changed from text-gray-700 to text-gray-900 */}
                           Delivery Address
                         </label>
                         <textarea
@@ -581,9 +650,10 @@ export default function Cart() {
                               address: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900" // Added text-gray-900
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1b4b27] text-gray-900"
                           rows={3}
                           placeholder="Your delivery address"
+                          readOnly={!!existingCustomer}
                         />
                       </div>
 

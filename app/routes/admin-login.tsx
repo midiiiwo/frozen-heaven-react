@@ -150,7 +150,7 @@ export default function AdminLogin() {
                   setEmail(e.target.value);
                   setError("");
                 }}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1b4b27] focus:border-transparent outline-none transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1b4b27] focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
                 placeholder="admin@frozenhaven.com"
                 disabled={isLoading}
                 autoComplete="email"
@@ -173,7 +173,7 @@ export default function AdminLogin() {
                     onChange={(e) => handlePinChange(index, e.target.value)}
                     onKeyDown={(e) => handlePinKeyDown(index, e)}
                     onPaste={handlePinPaste}
-                    className="w-full aspect-square text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1b4b27] focus:border-[#1b4b27] outline-none transition-all"
+                    className="w-full aspect-square text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1b4b27] focus:border-[#1b4b27] outline-none transition-all text-gray-900"
                     disabled={isLoading}
                     autoComplete="off"
                   />
