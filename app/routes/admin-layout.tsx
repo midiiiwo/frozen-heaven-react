@@ -180,13 +180,13 @@ export default function AdminLayout() {
           <div className="p-4 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-[#1b4b27] rounded-full flex items-center justify-center text-white font-bold">
-                {adminEmail?.charAt(0).toUpperCase() || "A"}
+                {/* {adminEmail?.charAt(0).toUpperCase() || "A"} */}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
                   Admin User
                 </p>
-                <p className="text-xs text-gray-500 truncate">{adminEmail}</p>
+                {/* <p className="text-xs text-gray-500 truncate">{adminEmail}</p> */}
               </div>
             </div>
             <button

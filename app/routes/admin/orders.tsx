@@ -6,16 +6,21 @@ import {
   useUpdateOrderStatus,
   useDeleteOrder,
 } from "../../hooks/useOrders";
+import toast from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+import { useConfirmationModal } from "~/hooks/useConfirmationModal";
+import ConfirmationModal from "~/components/ConfirmationDialog";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Orders - Admin - Frozen Haven" }];
 }
 
 export default function AdminOrders() {
-  const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>(
-    "all"
-  );
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | Order["status"] | "pay_later"
+  >("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { modalProps, showConfirmation } = useConfirmationModal();
 
   const { data: orders, isLoading, error } = useGetOrders();
   const { data: stats } = useGetOrderStatistics();
@@ -30,6 +35,8 @@ export default function AdminOrders() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "pay_later":
+        return "bg-purple-100 text-purple-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       case "processing":
@@ -44,41 +51,82 @@ export default function AdminOrders() {
   };
 
   const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
-    if (
-      confirm(
-        `Are you sure you want to change the order status to ${newStatus}?`
-      )
-    ) {
-      updateOrderStatus.mutate(
-        { id: orderId, status: newStatus },
-        {
-          onSuccess: () => {
-            alert("Order status updated successfully!");
-          },
-          onError: () => {
-            alert("Failed to update order status. Please try again.");
-          },
-        }
-      );
-    }
+    showConfirmation({
+      title: "Change Order Status",
+      message: `Are you sure you want to change the order status to ${newStatus}?`,
+      variant: "default",
+      onConfirm: () => {
+        return new Promise((resolve, reject) => {
+          updateOrderStatus.mutate(
+            { id: orderId, status: newStatus },
+            {
+              onSuccess: () => {
+                toast.success("Order status updated successfully!");
+                resolve();
+              },
+              onError: () => {
+                toast.error("Failed to update order status. Please try again.");
+                reject();
+              },
+            }
+          );
+        });
+      },
+    });
+  };
+
+  const handleConfirmPayment = (orderId: string) => {
+    showConfirmation({
+      title: "Confirm Payment",
+      message:
+        "Confirm that payment has been received and update order to pending?",
+      variant: "success",
+      confirmText: "Confirm Payment",
+      onConfirm: () => {
+        return new Promise((resolve, reject) => {
+          updateOrderStatus.mutate(
+            { id: orderId, status: "pending" },
+            {
+              onSuccess: () => {
+                toast.success(
+                  "Payment confirmed! Order status updated to pending."
+                );
+                resolve();
+              },
+              onError: () => {
+                toast.error("Failed to confirm payment. Please try again.");
+                reject();
+              },
+            }
+          );
+        });
+      },
+    });
   };
 
   const handleDeleteOrder = (orderId: string) => {
-    if (
-      confirm(
-        "Are you sure you want to delete this order? This action cannot be undone."
-      )
-    ) {
-      deleteOrder.mutate(orderId, {
-        onSuccess: () => {
-          alert("Order deleted successfully!");
-          setSelectedOrder(null);
-        },
-        onError: () => {
-          alert("Failed to delete order. Please try again.");
-        },
-      });
-    }
+    showConfirmation({
+      title: "Delete Order",
+      message:
+        "Are you sure you want to delete this order? This action cannot be undone.",
+      variant: "danger",
+      confirmText: "Delete Order",
+      onConfirm: () => {
+        return new Promise((resolve, reject) => {
+          deleteOrder.mutate(orderId, {
+            onSuccess: () => {
+              toast.success("Order deleted successfully!");
+              setSelectedOrder(null);
+              resolve();
+            },
+            onError: () => {
+              toast.error("Failed to delete order. Please try again.");
+              reject();
+            },
+          });
+        });
+      },
+    });
   };
 
   if (error) {
@@ -98,6 +146,34 @@ export default function AdminOrders() {
 
   return (
     <div className="p-6 lg:p-8">
+      {/* Toast Container */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#363636",
+            color: "#fff",
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: "#10B981",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: "#EF4444",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
+
+      <ConfirmationModal {...modalProps} />
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
         <p className="text-gray-600">Manage and track customer orders</p>
@@ -127,6 +203,31 @@ export default function AdminOrders() {
             {stats?.total || 0}
           </h3>
           <p className="text-sm text-gray-500 mt-1">All time</p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">Awaiting Payment</span>
+            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-purple-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900">
+            {stats?.pay_later || 0}
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">Payment pending</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -215,6 +316,16 @@ export default function AdminOrders() {
           }`}
         >
           All Orders
+        </button>
+        <button
+          onClick={() => setStatusFilter("pay_later")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            statusFilter === "pay_later"
+              ? "bg-[#1b4b27] text-white"
+              : "text-gray-700 hover:bg-gray-100"
+          }`}
+        >
+          Awaiting Payment
         </button>
         <button
           onClick={() => setStatusFilter("pending")}
@@ -330,8 +441,10 @@ export default function AdminOrders() {
                         <span
                           className={`px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(order.status)}`}
                         >
-                          {order.status.charAt(0).toUpperCase() +
-                            order.status.slice(1)}
+                          {order.status === "pay_later"
+                            ? "Awaiting Payment"
+                            : order.status.charAt(0).toUpperCase() +
+                              order.status.slice(1)}
                         </span>
                       </td>
                       <td className="py-4 px-6">
@@ -361,6 +474,30 @@ export default function AdminOrders() {
                               />
                             </svg>
                           </button>
+
+                          {/* Confirm Payment Button for pay_later status */}
+                          {order.status === "pay_later" && (
+                            <button
+                              onClick={() => handleConfirmPayment(order.id!)}
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                              title="Confirm Payment"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            </button>
+                          )}
+
                           {order.status === "pending" && (
                             <button
                               onClick={() =>
@@ -407,29 +544,30 @@ export default function AdminOrders() {
                               </svg>
                             </button>
                           )}
-                          {order.status !== "cancelled" && (
-                            <button
-                              onClick={() =>
-                                handleStatusChange(order.id!, "cancelled")
-                              }
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                              title="Cancel order"
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                          {order.status !== "cancelled" &&
+                            order.status !== "pay_later" && (
+                              <button
+                                onClick={() =>
+                                  handleStatusChange(order.id!, "cancelled")
+                                }
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                title="Cancel order"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                          )}
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                              </button>
+                            )}
                         </div>
                       </td>
                     </tr>
@@ -489,7 +627,9 @@ export default function AdminOrders() {
                   <span
                     className={`inline-block px-2 py-1 text-xs rounded-full font-medium ${getStatusColor(selectedOrder.status)}`}
                   >
-                    {selectedOrder.status}
+                    {selectedOrder.status === "pay_later"
+                      ? "Awaiting Payment"
+                      : selectedOrder.status}
                   </span>
                 </div>
                 <div>
@@ -561,6 +701,17 @@ export default function AdminOrders() {
               </div>
 
               <div className="mt-6 flex gap-3">
+                {selectedOrder.status === "pay_later" && (
+                  <button
+                    onClick={() => {
+                      handleConfirmPayment(selectedOrder.id!);
+                      setSelectedOrder(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  >
+                    Confirm Payment
+                  </button>
+                )}
                 {selectedOrder.status === "pending" && (
                   <button
                     onClick={() => {
@@ -583,17 +734,18 @@ export default function AdminOrders() {
                     Mark as Completed
                   </button>
                 )}
-                {selectedOrder.status !== "cancelled" && (
-                  <button
-                    onClick={() => {
-                      handleStatusChange(selectedOrder.id!, "cancelled");
-                      setSelectedOrder(null);
-                    }}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                  >
-                    Cancel Order
-                  </button>
-                )}
+                {selectedOrder.status !== "cancelled" &&
+                  selectedOrder.status !== "pay_later" && (
+                    <button
+                      onClick={() => {
+                        handleStatusChange(selectedOrder.id!, "cancelled");
+                        setSelectedOrder(null);
+                      }}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
                 <button
                   onClick={() => handleDeleteOrder(selectedOrder.id!)}
                   className="px-4 py-2 border border-red-600 text-red-600 rounded-md hover:bg-red-50"
